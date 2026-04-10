@@ -1,0 +1,1341 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PawCanvas — Turn Your Pet Into Art</title>
+<meta name="description" content="Custom AI pet portraits on premium canvas, blankets, mugs & more. Upload a photo, choose your style, and we ship a masterpiece to your door.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400;1,600&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+:root {
+  --bg: #FBF7F0;
+  --surface: #FFFFFF;
+  --surface-offset: #F5EFE3;
+  --text: #2C1810;
+  --text-muted: #8A6E5A;
+  --primary: #D4722A;
+  --primary-hover: #B85E1E;
+  --primary-light: #D4722A15;
+  --border: #E8DDD0;
+  --success: #2D8F5E;
+  --badge-popular: #D4722A;
+  --badge-best: #2D8F5E;
+  --badge-premium: #7C5CBF;
+  --badge-gift: #C44569;
+  --shadow: 0 2px 16px rgba(44, 24, 16, 0.06);
+  --shadow-hover: 0 8px 32px rgba(44, 24, 16, 0.12);
+  --radius: 12px;
+  --radius-sm: 8px;
+  --transition: 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  --font-display: 'Playfair Display', Georgia, serif;
+  --font-body: 'DM Sans', -apple-system, sans-serif;
+  --max-width: 1200px;
+}
+
+html { scroll-behavior: smooth; }
+body {
+  font-family: var(--font-body);
+  background: var(--bg);
+  color: var(--text);
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ============ HEADER ============ */
+.header {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  backdrop-filter: blur(12px);
+}
+.header-inner {
+  max-width: var(--max-width);
+  margin: 0 auto;
+  padding: 0 24px;
+  height: 72px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.logo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  text-decoration: none;
+  color: var(--text);
+}
+.logo svg { width: 36px; height: 36px; }
+.logo-text {
+  font-family: var(--font-display);
+  font-size: 1.5rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+.nav-links {
+  display: flex;
+  align-items: center;
+  gap: 32px;
+  list-style: none;
+}
+.nav-links a {
+  text-decoration: none;
+  color: var(--text-muted);
+  font-size: 0.9rem;
+  font-weight: 500;
+  transition: color var(--transition);
+}
+.nav-links a:hover { color: var(--text); }
+.cart-btn {
+  position: relative;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 8px;
+  color: var(--text);
+}
+.cart-btn svg { width: 24px; height: 24px; }
+.cart-count {
+  position: absolute;
+  top: 0;
+  right: 0;
+  background: var(--primary);
+  color: #fff;
+  font-size: 0.65rem;
+  font-weight: 700;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transform: scale(0);
+  transition: transform var(--transition);
+}
+.cart-count.active { transform: scale(1); }
+.btn-cta-nav {
+  background: var(--primary);
+  color: #fff;
+  border: none;
+  padding: 10px 22px;
+  border-radius: var(--radius-sm);
+  font-family: var(--font-body);
+  font-size: 0.88rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background var(--transition), transform var(--transition);
+  text-decoration: none;
+}
+.btn-cta-nav:hover { background: var(--primary-hover); transform: translateY(-1px); }
+
+/* Mobile nav */
+.mobile-toggle {
+  display: none;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 8px;
+  color: var(--text);
+}
+.mobile-toggle svg { width: 24px; height: 24px; }
+
+@media (max-width: 768px) {
+  .nav-links { display: none; }
+  .btn-cta-nav.desktop { display: none; }
+  .mobile-toggle { display: block; }
+  .nav-links.open {
+    display: flex;
+    flex-direction: column;
+    position: absolute;
+    top: 72px;
+    left: 0;
+    right: 0;
+    background: var(--surface);
+    padding: 24px;
+    border-bottom: 1px solid var(--border);
+    gap: 20px;
+  }
+}
+
+/* ============ HERO ============ */
+.hero {
+  max-width: var(--max-width);
+  margin: 0 auto;
+  padding: 80px 24px 60px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 60px;
+  align-items: center;
+}
+.hero-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--primary-light);
+  color: var(--primary);
+  padding: 8px 16px;
+  border-radius: 40px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  margin-bottom: 24px;
+}
+.hero h1 {
+  font-family: var(--font-display);
+  font-size: clamp(2.4rem, 5vw, 3.6rem);
+  font-weight: 700;
+  line-height: 1.15;
+  letter-spacing: -0.02em;
+  margin-bottom: 20px;
+}
+.hero h1 em {
+  color: var(--primary);
+  font-style: italic;
+}
+.hero-sub {
+  color: var(--text-muted);
+  font-size: 1.1rem;
+  line-height: 1.7;
+  margin-bottom: 32px;
+  max-width: 500px;
+}
+.hero-btns {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+.btn-primary {
+  background: var(--primary);
+  color: #fff;
+  border: none;
+  padding: 14px 32px;
+  border-radius: var(--radius-sm);
+  font-family: var(--font-body);
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all var(--transition);
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+.btn-primary:hover { background: var(--primary-hover); transform: translateY(-2px); box-shadow: 0 6px 20px rgba(212, 114, 42, 0.3); }
+.btn-outline {
+  background: transparent;
+  color: var(--text);
+  border: 2px solid var(--border);
+  padding: 12px 28px;
+  border-radius: var(--radius-sm);
+  font-family: var(--font-body);
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all var(--transition);
+  text-decoration: none;
+}
+.btn-outline:hover { border-color: var(--text); }
+
+/* Hero visual */
+.hero-visual {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+.hero-card {
+  background: var(--surface);
+  border-radius: var(--radius);
+  overflow: hidden;
+  box-shadow: var(--shadow);
+  transition: transform var(--transition), box-shadow var(--transition);
+}
+.hero-card:hover { transform: translateY(-4px); box-shadow: var(--shadow-hover); }
+.hero-card:first-child { grid-row: 1 / 3; }
+.hero-card-img {
+  width: 100%;
+  aspect-ratio: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 3rem;
+}
+.hero-card-img.watercolor { background: linear-gradient(135deg, #E8D5C4, #C4A882, #D4B896); }
+.hero-card-img.oil { background: linear-gradient(135deg, #8B6F47, #A67C52, #BF9B6E); }
+.hero-card-img.renaissance { background: linear-gradient(135deg, #C9A96E, #B8860B, #DAA520); }
+.hero-card:first-child .hero-card-img { aspect-ratio: auto; height: 100%; min-height: 260px; font-size: 5rem; }
+.hero-card-body { padding: 14px 16px; }
+.hero-card-body h3 { font-family: var(--font-display); font-size: 0.95rem; margin-bottom: 2px; }
+.hero-card-body p { color: var(--text-muted); font-size: 0.8rem; }
+
+@media (max-width: 768px) {
+  .hero { grid-template-columns: 1fr; padding: 48px 20px 40px; gap: 40px; }
+  .hero-visual { grid-template-columns: 1fr 1fr; }
+  .hero-card:first-child { grid-row: auto; }
+}
+
+/* ============ HOW IT WORKS ============ */
+.how-it-works {
+  max-width: var(--max-width);
+  margin: 0 auto;
+  padding: 80px 24px;
+}
+.section-label {
+  text-align: center;
+  color: var(--primary);
+  font-size: 0.8rem;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  margin-bottom: 12px;
+}
+.section-title {
+  text-align: center;
+  font-family: var(--font-display);
+  font-size: clamp(1.8rem, 3vw, 2.4rem);
+  font-weight: 700;
+  margin-bottom: 56px;
+}
+.steps-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 40px;
+}
+.step {
+  text-align: center;
+  padding: 32px 24px;
+}
+.step-num {
+  font-family: var(--font-display);
+  font-size: 4rem;
+  font-weight: 700;
+  color: var(--primary);
+  opacity: 0.15;
+  line-height: 1;
+  margin-bottom: 16px;
+}
+.step h3 {
+  font-family: var(--font-display);
+  font-size: 1.3rem;
+  margin-bottom: 12px;
+}
+.step p {
+  color: var(--text-muted);
+  font-size: 0.95rem;
+  line-height: 1.6;
+}
+
+@media (max-width: 768px) {
+  .steps-grid { grid-template-columns: 1fr; gap: 24px; }
+}
+
+/* ============ PRODUCTS ============ */
+.products {
+  max-width: var(--max-width);
+  margin: 0 auto;
+  padding: 80px 24px;
+}
+.products-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 24px;
+}
+.product-card {
+  background: var(--surface);
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  overflow: hidden;
+  transition: transform var(--transition), box-shadow var(--transition);
+}
+.product-card:hover { transform: translateY(-4px); box-shadow: var(--shadow-hover); }
+.product-img {
+  width: 100%;
+  aspect-ratio: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  font-size: 3.5rem;
+}
+.product-img.canvas-bg { background: linear-gradient(135deg, #E8D5C4, #D4B896); }
+.product-img.blanket-bg { background: linear-gradient(135deg, #D4C5B5, #E8DDD0); }
+.product-img.mug-bg { background: linear-gradient(135deg, #F0E8DC, #E8D5C4); }
+.product-img.phone-bg { background: linear-gradient(135deg, #D0C4B4, #C4B8A8); }
+.product-img.pillow-bg { background: linear-gradient(135deg, #E0D5C8, #D4C8B8); }
+.product-img.tote-bg { background: linear-gradient(135deg, #D8CFC2, #C8BFB2); }
+.product-badge {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: #fff;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+.badge-popular { background: var(--badge-popular); }
+.badge-best { background: var(--badge-best); }
+.badge-premium { background: var(--badge-premium); }
+.badge-gift { background: var(--badge-gift); }
+.product-body {
+  padding: 20px;
+}
+.product-name {
+  font-family: var(--font-display);
+  font-size: 1.15rem;
+  font-weight: 600;
+  margin-bottom: 2px;
+}
+.product-subtitle {
+  color: var(--text-muted);
+  font-size: 0.82rem;
+  margin-bottom: 4px;
+}
+.product-size {
+  color: var(--text-muted);
+  font-size: 0.78rem;
+  margin-bottom: 12px;
+}
+.product-desc {
+  color: var(--text-muted);
+  font-size: 0.88rem;
+  line-height: 1.5;
+  margin-bottom: 16px;
+  min-height: 44px;
+}
+.product-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.product-price {
+  font-family: var(--font-display);
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: var(--text);
+}
+.btn-add {
+  background: var(--primary);
+  color: #fff;
+  border: none;
+  padding: 10px 20px;
+  border-radius: var(--radius-sm);
+  font-family: var(--font-body);
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all var(--transition);
+}
+.btn-add:hover { background: var(--primary-hover); transform: scale(1.03); }
+
+/* ============ ART STYLES ============ */
+.styles {
+  background: var(--surface-offset);
+  padding: 80px 24px;
+}
+.styles-inner {
+  max-width: var(--max-width);
+  margin: 0 auto;
+}
+.styles-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20px;
+}
+.style-card {
+  border-radius: var(--radius);
+  padding: 40px 28px;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+  cursor: pointer;
+  transition: transform var(--transition);
+}
+.style-card:hover { transform: translateY(-4px); }
+.style-card h3 {
+  font-family: var(--font-display);
+  font-size: 1.2rem;
+  color: #fff;
+  margin-bottom: 6px;
+  position: relative;
+}
+.style-card p {
+  color: rgba(255,255,255,0.8);
+  font-size: 0.85rem;
+  position: relative;
+}
+.style-card .style-badge {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  background: #fff;
+  color: var(--text);
+  padding: 3px 10px;
+  border-radius: 12px;
+  font-size: 0.68rem;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+.s-watercolor { background: linear-gradient(135deg, #6B8DA6, #8EA4B8, #A0B8CC); }
+.s-oil { background: linear-gradient(135deg, #8B6F47, #6B5234, #A67C52); }
+.s-renaissance { background: linear-gradient(135deg, #B8860B, #8B6914, #DAA520); }
+.s-pop { background: linear-gradient(135deg, #E74C8B, #FF6B6B, #FFC75F); }
+.s-minimal { background: linear-gradient(135deg, #888, #AAA, #CCC); }
+.s-cartoon { background: linear-gradient(135deg, #D4722A, #E8904A, #1CA89E); }
+
+@media (max-width: 768px) {
+  .styles-grid { grid-template-columns: 1fr 1fr; }
+}
+@media (max-width: 480px) {
+  .styles-grid { grid-template-columns: 1fr; }
+}
+
+/* ============ REVIEWS ============ */
+.reviews {
+  max-width: var(--max-width);
+  margin: 0 auto;
+  padding: 80px 24px;
+}
+.reviews-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 24px;
+  margin-bottom: 48px;
+}
+.review-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 28px;
+}
+.review-stars {
+  color: #F0A500;
+  font-size: 1rem;
+  margin-bottom: 14px;
+  letter-spacing: 2px;
+}
+.review-text {
+  font-size: 0.95rem;
+  line-height: 1.6;
+  margin-bottom: 16px;
+  font-style: italic;
+}
+.review-author {
+  color: var(--text-muted);
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+.stats-bar {
+  display: flex;
+  justify-content: center;
+  gap: 48px;
+  flex-wrap: wrap;
+  padding: 32px;
+  background: var(--surface);
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+}
+.stat {
+  text-align: center;
+}
+.stat-num {
+  font-family: var(--font-display);
+  font-size: 1.6rem;
+  font-weight: 700;
+  color: var(--primary);
+}
+.stat-label {
+  color: var(--text-muted);
+  font-size: 0.82rem;
+}
+
+@media (max-width: 768px) {
+  .reviews-grid { grid-template-columns: 1fr; }
+  .stats-bar { gap: 32px; }
+}
+
+/* ============ CTA BANNER ============ */
+.cta-banner {
+  background: linear-gradient(135deg, var(--primary), var(--primary-hover), #8B4513);
+  padding: 72px 24px;
+  text-align: center;
+}
+.cta-banner h2 {
+  font-family: var(--font-display);
+  font-size: clamp(1.8rem, 3.5vw, 2.6rem);
+  color: #fff;
+  margin-bottom: 16px;
+}
+.cta-banner p {
+  color: rgba(255,255,255,0.85);
+  font-size: 1.05rem;
+  margin-bottom: 32px;
+  max-width: 500px;
+  margin-left: auto;
+  margin-right: auto;
+}
+.btn-white {
+  background: #fff;
+  color: var(--primary);
+  border: none;
+  padding: 16px 36px;
+  border-radius: var(--radius-sm);
+  font-family: var(--font-body);
+  font-size: 1.05rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all var(--transition);
+  text-decoration: none;
+}
+.btn-white:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,0,0,0.2); }
+
+/* ============ FAQ ============ */
+.faq {
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 80px 24px;
+}
+.faq-item {
+  border-bottom: 1px solid var(--border);
+}
+.faq-question {
+  width: 100%;
+  background: none;
+  border: none;
+  text-align: left;
+  padding: 20px 0;
+  font-family: var(--font-body);
+  font-size: 1.05rem;
+  font-weight: 600;
+  color: var(--text);
+  cursor: pointer;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.faq-question::after {
+  content: '+';
+  font-size: 1.4rem;
+  color: var(--text-muted);
+  transition: transform var(--transition);
+}
+.faq-item.open .faq-question::after { content: '−'; }
+.faq-answer {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.3s ease, padding 0.3s ease;
+}
+.faq-item.open .faq-answer {
+  max-height: 300px;
+  padding-bottom: 20px;
+}
+.faq-answer p {
+  color: var(--text-muted);
+  font-size: 0.95rem;
+  line-height: 1.7;
+}
+
+/* ============ FOOTER ============ */
+.footer {
+  background: var(--text);
+  color: rgba(255,255,255,0.7);
+  padding: 48px 24px;
+}
+.footer-inner {
+  max-width: var(--max-width);
+  margin: 0 auto;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 24px;
+}
+.footer-logo {
+  font-family: var(--font-display);
+  font-size: 1.3rem;
+  color: #fff;
+  font-weight: 700;
+}
+.footer-tagline { font-size: 0.85rem; margin-top: 4px; }
+.footer-links { display: flex; gap: 24px; list-style: none; }
+.footer-links a {
+  color: rgba(255,255,255,0.6);
+  text-decoration: none;
+  font-size: 0.85rem;
+  transition: color var(--transition);
+}
+.footer-links a:hover { color: #fff; }
+.footer-powered { font-size: 0.78rem; opacity: 0.5; text-align: center; width: 100%; margin-top: 24px; }
+
+/* ============ CART DRAWER ============ */
+.cart-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(44, 24, 16, 0.4);
+  z-index: 200;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity var(--transition);
+}
+.cart-overlay.open { opacity: 1; pointer-events: all; }
+.cart-drawer {
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: min(420px, 90vw);
+  background: var(--surface);
+  z-index: 201;
+  transform: translateX(100%);
+  transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+  display: flex;
+  flex-direction: column;
+}
+.cart-drawer.open { transform: translateX(0); }
+.cart-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 24px;
+  border-bottom: 1px solid var(--border);
+}
+.cart-header h2 {
+  font-family: var(--font-display);
+  font-size: 1.4rem;
+}
+.cart-close {
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  cursor: pointer;
+  color: var(--text-muted);
+  padding: 4px;
+}
+.cart-items {
+  flex: 1;
+  overflow-y: auto;
+  padding: 16px 24px;
+}
+.cart-empty {
+  text-align: center;
+  padding: 60px 20px;
+  color: var(--text-muted);
+}
+.cart-empty-icon { font-size: 3rem; margin-bottom: 16px; }
+.cart-item {
+  display: flex;
+  gap: 16px;
+  padding: 16px 0;
+  border-bottom: 1px solid var(--border);
+  align-items: center;
+}
+.cart-item-icon {
+  width: 64px;
+  height: 64px;
+  border-radius: var(--radius-sm);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.8rem;
+  background: var(--surface-offset);
+  flex-shrink: 0;
+}
+.cart-item-info { flex: 1; }
+.cart-item-name { font-weight: 600; font-size: 0.9rem; }
+.cart-item-detail { color: var(--text-muted); font-size: 0.8rem; }
+.cart-item-price { font-weight: 700; font-size: 0.95rem; }
+.cart-item-qty {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 8px;
+}
+.qty-btn {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  cursor: pointer;
+  font-size: 0.9rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all var(--transition);
+}
+.qty-btn:hover { border-color: var(--text); }
+.cart-item-remove {
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  font-size: 0.78rem;
+  text-decoration: underline;
+  margin-left: 12px;
+}
+.cart-footer {
+  padding: 24px;
+  border-top: 1px solid var(--border);
+}
+.cart-total {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+.cart-total-label { font-weight: 600; font-size: 1rem; }
+.cart-total-price {
+  font-family: var(--font-display);
+  font-size: 1.5rem;
+  font-weight: 700;
+}
+.cart-note {
+  color: var(--text-muted);
+  font-size: 0.78rem;
+  margin-bottom: 16px;
+}
+
+/* Style selector in cart */
+.cart-style-selector {
+  margin-bottom: 16px;
+}
+.cart-style-selector label {
+  display: block;
+  font-weight: 600;
+  font-size: 0.88rem;
+  margin-bottom: 8px;
+}
+.cart-style-selector select {
+  width: 100%;
+  padding: 10px 14px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  font-family: var(--font-body);
+  font-size: 0.9rem;
+  background: var(--surface);
+  color: var(--text);
+}
+
+.btn-checkout {
+  width: 100%;
+  background: var(--primary);
+  color: #fff;
+  border: none;
+  padding: 16px;
+  border-radius: var(--radius-sm);
+  font-family: var(--font-body);
+  font-size: 1.05rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all var(--transition);
+}
+.btn-checkout:hover { background: var(--primary-hover); }
+.btn-checkout:disabled { opacity: 0.5; cursor: not-allowed; }
+.btn-checkout .spinner {
+  display: inline-block;
+  width: 18px;
+  height: 18px;
+  border: 2px solid rgba(255,255,255,0.3);
+  border-top-color: #fff;
+  border-radius: 50%;
+  animation: spin 0.6s linear infinite;
+  margin-right: 8px;
+  vertical-align: middle;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ============ ANIMATIONS ============ */
+.fade-in {
+  opacity: 0;
+  transform: translateY(20px);
+  transition: opacity 0.6s ease, transform 0.6s ease;
+}
+.fade-in.visible { opacity: 1; transform: translateY(0); }
+
+/* ============ TOAST ============ */
+.toast {
+  position: fixed;
+  bottom: 32px;
+  left: 50%;
+  transform: translateX(-50%) translateY(80px);
+  background: var(--text);
+  color: #fff;
+  padding: 14px 28px;
+  border-radius: var(--radius);
+  font-size: 0.9rem;
+  font-weight: 500;
+  z-index: 300;
+  transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.toast.show { transform: translateX(-50%) translateY(0); }
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<header class="header">
+  <div class="header-inner">
+    <a href="#" class="logo">
+      <svg viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="10" cy="8" r="4.5" fill="#D4722A"/>
+        <circle cx="26" cy="8" r="4.5" fill="#D4722A"/>
+        <circle cx="5" cy="18" r="4" fill="#D4722A"/>
+        <circle cx="31" cy="18" r="4" fill="#D4722A"/>
+        <ellipse cx="18" cy="24" rx="10" ry="9" fill="#D4722A"/>
+        <ellipse cx="18" cy="23" rx="6" ry="5" fill="#FBF7F0"/>
+      </svg>
+      <span class="logo-text">PawCanvas</span>
+    </a>
+    <nav>
+      <ul class="nav-links" id="navLinks">
+        <li><a href="#shop">Shop</a></li>
+        <li><a href="#how-it-works">How It Works</a></li>
+        <li><a href="#styles">Styles</a></li>
+        <li><a href="#reviews">Reviews</a></li>
+      </ul>
+    </nav>
+    <div style="display: flex; align-items: center; gap: 16px;">
+      <button class="cart-btn" id="cartBtn" aria-label="Open cart">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
+        <span class="cart-count" id="cartCount">0</span>
+      </button>
+      <a href="#shop" class="btn-cta-nav desktop">Start Creating</a>
+      <button class="mobile-toggle" id="mobileToggle" aria-label="Toggle menu">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+      </button>
+    </div>
+  </div>
+</header>
+
+<!-- HERO -->
+<section class="hero fade-in">
+  <div>
+    <div class="hero-badge">★ Loved by 10,000+ Pet Parents</div>
+    <h1>Your Pet Deserves to Be a <em>Masterpiece</em></h1>
+    <p class="hero-sub">Upload a photo. Choose your art style. We'll turn your furry best friend into a stunning, personalized portrait — printed on premium products and shipped to your door.</p>
+    <div class="hero-btns">
+      <a href="#shop" class="btn-primary">Start Creating →</a>
+      <a href="#styles" class="btn-outline">See Art Styles</a>
+    </div>
+  </div>
+  <div class="hero-visual">
+    <div class="hero-card">
+      <div class="hero-card-img watercolor">🐕</div>
+      <div class="hero-card-body">
+        <h3>Watercolor Dream</h3>
+        <p>Soft, flowing colors</p>
+      </div>
+    </div>
+    <div class="hero-card">
+      <div class="hero-card-img oil">🐈</div>
+      <div class="hero-card-body">
+        <h3>Oil Painting</h3>
+        <p>Timeless classic</p>
+      </div>
+    </div>
+    <div class="hero-card">
+      <div class="hero-card-img renaissance">🐩</div>
+      <div class="hero-card-body">
+        <h3>Renaissance</h3>
+        <p>Royal portrait</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- HOW IT WORKS -->
+<section class="how-it-works fade-in" id="how-it-works">
+  <div class="section-label">Simple Process</div>
+  <h2 class="section-title">How It Works</h2>
+  <div class="steps-grid">
+    <div class="step">
+      <div class="step-num">01</div>
+      <h3>Upload Your Photo</h3>
+      <p>Any clear photo of your pet works perfectly. Front-facing shots with good lighting give the best results.</p>
+    </div>
+    <div class="step">
+      <div class="step-num">02</div>
+      <h3>Choose Your Style</h3>
+      <p>Pick from watercolor, oil painting, renaissance, pop art, minimalist, or cartoon. Each one is uniquely crafted.</p>
+    </div>
+    <div class="step">
+      <div class="step-num">03</div>
+      <h3>We Print & Ship</h3>
+      <p>We send you a digital preview first. Once approved, your order is printed on premium materials and shipped in 5-7 days.</p>
+    </div>
+  </div>
+</section>
+
+<!-- PRODUCTS -->
+<section class="products fade-in" id="shop">
+  <div class="section-label">Shop Collection</div>
+  <h2 class="section-title">Personalized Pet Products</h2>
+  <div class="products-grid" id="productsGrid">
+    <!-- Loaded via JS -->
+  </div>
+</section>
+
+<!-- ART STYLES -->
+<section class="styles fade-in" id="styles">
+  <div class="styles-inner">
+    <div class="section-label">Art Direction</div>
+    <h2 class="section-title">Choose Your Perfect Style</h2>
+    <div class="styles-grid">
+      <div class="style-card s-watercolor">
+        <span class="style-badge">Most Popular</span>
+        <h3>Watercolor Dream</h3>
+        <p>Soft, flowing colors</p>
+      </div>
+      <div class="style-card s-oil">
+        <h3>Oil Painting Classic</h3>
+        <p>Timeless and elegant</p>
+      </div>
+      <div class="style-card s-renaissance">
+        <h3>Renaissance Portrait</h3>
+        <p>Royal and regal</p>
+      </div>
+      <div class="style-card s-pop">
+        <span class="style-badge">New</span>
+        <h3>Pop Art Bold</h3>
+        <p>Colorful and modern</p>
+      </div>
+      <div class="style-card s-minimal">
+        <h3>Minimalist Line Art</h3>
+        <p>Clean and contemporary</p>
+      </div>
+      <div class="style-card s-cartoon">
+        <h3>Cartoon Fun</h3>
+        <p>Playful and bright</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- REVIEWS -->
+<section class="reviews fade-in" id="reviews">
+  <div class="section-label">Testimonials</div>
+  <h2 class="section-title">Happy Pet Parents</h2>
+  <div class="reviews-grid">
+    <div class="review-card">
+      <div class="review-stars">★★★★★</div>
+      <p class="review-text">"I cried when I saw it! My late dog Max looks like royalty in the renaissance style. The quality of the canvas is incredible — it's the centerpiece of our living room."</p>
+      <div class="review-author">— Sarah M., California</div>
+    </div>
+    <div class="review-card">
+      <div class="review-stars">★★★★★</div>
+      <p class="review-text">"Ordered the blanket for my mom's birthday and she absolutely lost it. She sleeps with it every night. Already ordered two more for the rest of the family!"</p>
+      <div class="review-author">— James K., Ontario</div>
+    </div>
+    <div class="review-card">
+      <div class="review-stars">★★★★★</div>
+      <p class="review-text">"My cat looks like he belongs in the Louvre now. The watercolor style is unreal — you'd think a human artist painted it. Obsessed with this product."</p>
+      <div class="review-author">— Priya L., London</div>
+    </div>
+  </div>
+  <div class="stats-bar">
+    <div class="stat"><div class="stat-num">10,000+</div><div class="stat-label">Portraits Created</div></div>
+    <div class="stat"><div class="stat-num">4.9/5</div><div class="stat-label">Average Rating</div></div>
+    <div class="stat"><div class="stat-num">5-7 Days</div><div class="stat-label">Fast Shipping</div></div>
+    <div class="stat"><div class="stat-num">100%</div><div class="stat-label">Satisfaction Guarantee</div></div>
+  </div>
+</section>
+
+<!-- CTA BANNER -->
+<section class="cta-banner fade-in">
+  <h2>Ready to Immortalize Your Pet?</h2>
+  <p>Join 10,000+ pet parents who've turned their furry friends into timeless works of art.</p>
+  <a href="#shop" class="btn-white">Start Creating — It Takes 2 Minutes</a>
+</section>
+
+<!-- FAQ -->
+<section class="faq fade-in" id="faq">
+  <div class="section-label">Questions</div>
+  <h2 class="section-title">Frequently Asked</h2>
+  <div class="faq-item">
+    <button class="faq-question">What photo quality do I need?</button>
+    <div class="faq-answer"><p>Any clear, well-lit photo works. Front-facing shots where your pet's features are clearly visible give the best results. Phone photos are perfect — no professional camera needed. We'll let you know if we need a different angle.</p></div>
+  </div>
+  <div class="faq-item">
+    <button class="faq-question">How long does shipping take?</button>
+    <div class="faq-answer"><p>After you approve your portrait preview, production takes 3-5 business days. Shipping is 3-7 days for US/Canada and 7-14 days international. Every order includes tracking.</p></div>
+  </div>
+  <div class="faq-item">
+    <button class="faq-question">Can I return or exchange my order?</button>
+    <div class="faq-answer"><p>Since every product is custom-made, we can't accept returns for change of mind. However, we offer a 100% satisfaction guarantee — if there's any quality issue or you're not happy with the portrait, we'll remake it or refund you in full.</p></div>
+  </div>
+  <div class="faq-item">
+    <button class="faq-question">What products can I personalize?</button>
+    <div class="faq-answer"><p>Canvas prints (3 sizes), velveteen blankets (2 sizes), ceramic mugs (11oz and 15oz), phone cases (all iPhone and Samsung models), throw pillows, and cotton tote bags. We're always adding new products!</p></div>
+  </div>
+  <div class="faq-item">
+    <button class="faq-question">How does the portrait process work?</button>
+    <div class="faq-answer"><p>After your order, send us your pet's photo. Our team transforms it into your chosen art style using a blend of AI and artistic refinement. We send you a digital preview before printing — revisions are free until you're 100% happy.</p></div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer class="footer">
+  <div class="footer-inner">
+    <div>
+      <div class="footer-logo">🐾 PawCanvas</div>
+      <div class="footer-tagline">Turn Your Pet Into Art</div>
+    </div>
+    <ul class="footer-links">
+      <li><a href="#shop">Shop</a></li>
+      <li><a href="#how-it-works">How It Works</a></li>
+      <li><a href="#reviews">Reviews</a></li>
+      <li><a href="mailto:hello@pawcanvas.com">Contact</a></li>
+    </ul>
+    <div class="footer-powered">Fulfilled by Printify — shipped worldwide · © 2026 PawCanvas</div>
+  </div>
+</footer>
+
+<!-- CART DRAWER -->
+<div class="cart-overlay" id="cartOverlay"></div>
+<div class="cart-drawer" id="cartDrawer">
+  <div class="cart-header">
+    <h2>Your Cart</h2>
+    <button class="cart-close" id="cartClose">×</button>
+  </div>
+  <div class="cart-items" id="cartItems">
+    <div class="cart-empty" id="cartEmpty">
+      <div class="cart-empty-icon">🐾</div>
+      <p>Your cart is empty.<br>Add a product to get started!</p>
+    </div>
+  </div>
+  <div class="cart-footer" id="cartFooter" style="display: none;">
+    <div class="cart-total">
+      <span class="cart-total-label">Total</span>
+      <span class="cart-total-price" id="cartTotal">$0.00</span>
+    </div>
+    <div class="cart-note">Shipping calculated at checkout. Satisfaction guaranteed.</div>
+    <div class="cart-style-selector">
+      <label for="artStyle">Art Style for Your Portrait</label>
+      <select id="artStyle">
+        <option value="Watercolor Dream">Watercolor Dream (Most Popular)</option>
+        <option value="Oil Painting Classic">Oil Painting Classic</option>
+        <option value="Renaissance Portrait">Renaissance Portrait</option>
+        <option value="Pop Art Bold">Pop Art Bold</option>
+        <option value="Minimalist Line Art">Minimalist Line Art</option>
+        <option value="Cartoon Fun">Cartoon Fun</option>
+      </select>
+    </div>
+    <button class="btn-checkout" id="checkoutBtn">
+      Proceed to Checkout →
+    </button>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<script>
+// ===================== STATE =====================
+let cart = [];
+let products = [];
+const BG_MAP = { canvas: 'canvas-bg', blanket: 'blanket-bg', mug: 'mug-bg', phone: 'phone-bg', pillow: 'pillow-bg', tote: 'tote-bg' };
+const BADGE_MAP = { 'Best Seller': 'badge-best', 'Popular': 'badge-popular', 'Premium': 'badge-premium', 'Gift Favorite': 'badge-gift' };
+
+// ===================== LOAD PRODUCTS =====================
+async function loadProducts() {
+  try {
+    const res = await fetch('/api/products');
+    products = await res.json();
+    renderProducts();
+  } catch (e) {
+    console.error('Failed to load products:', e);
+  }
+}
+
+function renderProducts() {
+  const grid = document.getElementById('productsGrid');
+  grid.innerHTML = products.map(p => `
+    <div class="product-card">
+      <div class="product-img ${BG_MAP[p.category] || ''}">
+        ${p.badge ? `<span class="product-badge ${BADGE_MAP[p.badge] || 'badge-popular'}">${p.badge}</span>` : ''}
+        <span>${p.icon}</span>
+      </div>
+      <div class="product-body">
+        <div class="product-name">${p.name}</div>
+        <div class="product-subtitle">${p.subtitle}</div>
+        <div class="product-size">${p.size}</div>
+        <div class="product-desc">${p.description}</div>
+        <div class="product-footer">
+          <span class="product-price">${p.priceDisplay}</span>
+          <button class="btn-add" onclick="addToCart('${p.id}')">Add to Cart</button>
+        </div>
+      </div>
+    </div>
+  `).join('');
+}
+
+// ===================== CART LOGIC =====================
+function addToCart(productId) {
+  const product = products.find(p => p.id === productId);
+  if (!product) return;
+  const existing = cart.find(item => item.id === productId);
+  if (existing) {
+    existing.quantity++;
+  } else {
+    cart.push({ ...product, quantity: 1 });
+  }
+  updateCart();
+  openCart();
+  showToast(`${product.icon} ${product.name} (${product.size}) added!`);
+}
+
+function removeFromCart(productId) {
+  cart = cart.filter(item => item.id !== productId);
+  updateCart();
+}
+
+function changeQty(productId, delta) {
+  const item = cart.find(i => i.id === productId);
+  if (!item) return;
+  item.quantity += delta;
+  if (item.quantity <= 0) {
+    removeFromCart(productId);
+    return;
+  }
+  updateCart();
+}
+
+function updateCart() {
+  const count = cart.reduce((sum, item) => sum + item.quantity, 0);
+  const total = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+
+  // Update count badge
+  const badge = document.getElementById('cartCount');
+  badge.textContent = count;
+  badge.classList.toggle('active', count > 0);
+
+  // Update cart items
+  const itemsEl = document.getElementById('cartItems');
+  const emptyEl = document.getElementById('cartEmpty');
+  const footerEl = document.getElementById('cartFooter');
+
+  if (cart.length === 0) {
+    itemsEl.innerHTML = '<div class="cart-empty"><div class="cart-empty-icon">🐾</div><p>Your cart is empty.<br>Add a product to get started!</p></div>';
+    footerEl.style.display = 'none';
+    return;
+  }
+
+  footerEl.style.display = 'block';
+  itemsEl.innerHTML = cart.map(item => `
+    <div class="cart-item">
+      <div class="cart-item-icon">${item.icon}</div>
+      <div class="cart-item-info">
+        <div class="cart-item-name">${item.name}</div>
+        <div class="cart-item-detail">${item.subtitle} · ${item.size}</div>
+        <div class="cart-item-qty">
+          <button class="qty-btn" onclick="changeQty('${item.id}', -1)">−</button>
+          <span>${item.quantity}</span>
+          <button class="qty-btn" onclick="changeQty('${item.id}', 1)">+</button>
+          <button class="cart-item-remove" onclick="removeFromCart('${item.id}')">Remove</button>
+        </div>
+      </div>
+      <div class="cart-item-price">${'$' + ((item.price * item.quantity) / 100).toFixed(2)}</div>
+    </div>
+  `).join('');
+
+  document.getElementById('cartTotal').textContent = '$' + (total / 100).toFixed(2);
+}
+
+// ===================== CART DRAWER =====================
+function openCart() {
+  document.getElementById('cartOverlay').classList.add('open');
+  document.getElementById('cartDrawer').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+function closeCart() {
+  document.getElementById('cartOverlay').classList.remove('open');
+  document.getElementById('cartDrawer').classList.remove('open');
+  document.body.style.overflow = '';
+}
+
+document.getElementById('cartBtn').addEventListener('click', openCart);
+document.getElementById('cartClose').addEventListener('click', closeCart);
+document.getElementById('cartOverlay').addEventListener('click', closeCart);
+
+// ===================== CHECKOUT =====================
+document.getElementById('checkoutBtn').addEventListener('click', async () => {
+  if (cart.length === 0) return;
+
+  const btn = document.getElementById('checkoutBtn');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span> Redirecting to checkout...';
+
+  try {
+    const artStyle = document.getElementById('artStyle').value;
+    const res = await fetch('/api/create-checkout-session', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        items: cart.map(item => ({ id: item.id, quantity: item.quantity })),
+        artStyle: artStyle,
+      }),
+    });
+
+    const data = await res.json();
+    if (data.url) {
+      window.location.href = data.url;
+    } else {
+      throw new Error(data.error || 'Checkout failed');
+    }
+  } catch (error) {
+    console.error('Checkout error:', error);
+    btn.disabled = false;
+    btn.innerHTML = 'Proceed to Checkout →';
+    showToast('Something went wrong. Please try again.');
+  }
+});
+
+// ===================== TOAST =====================
+function showToast(message) {
+  const toast = document.getElementById('toast');
+  toast.textContent = message;
+  toast.classList.add('show');
+  setTimeout(() => toast.classList.remove('show'), 3000);
+}
+
+// ===================== FAQ ACCORDION =====================
+document.querySelectorAll('.faq-question').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const item = btn.parentElement;
+    const wasOpen = item.classList.contains('open');
+    document.querySelectorAll('.faq-item').forEach(i => i.classList.remove('open'));
+    if (!wasOpen) item.classList.add('open');
+  });
+});
+
+// ===================== MOBILE NAV =====================
+document.getElementById('mobileToggle').addEventListener('click', () => {
+  document.getElementById('navLinks').classList.toggle('open');
+});
+
+// ===================== SCROLL ANIMATIONS =====================
+const observer = new IntersectionObserver((entries) => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) {
+      entry.target.classList.add('visible');
+    }
+  });
+}, { threshold: 0.1 });
+
+document.querySelectorAll('.fade-in').forEach(el => observer.observe(el));
+
+// ===================== INIT =====================
+loadProducts();
+</script>
+</body>
+</html>
