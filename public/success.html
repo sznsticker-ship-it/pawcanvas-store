@@ -2,175 +2,107 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Order Confirmed — PawCanvas</title>
-<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
-*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
-:root {
-  --bg: #FBF7F0; --surface: #FFFFFF; --text: #2C1810; --text-muted: #8A6E5A;
-  --primary: #D4722A; --border: #E8DDD0; --success: #2D8F5E; --radius: 12px;
-}
-body {
-  font-family: 'DM Sans', sans-serif;
-  background: var(--bg);
-  color: var(--text);
-  min-height: 100vh;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 24px;
-}
-.success-card {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  max-width: 560px;
-  width: 100%;
-  padding: 56px 40px;
-  text-align: center;
-}
-.success-icon {
-  width: 72px;
-  height: 72px;
-  background: #E8F5E9;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin: 0 auto 24px;
-  font-size: 2rem;
-}
-h1 {
-  font-family: 'Playfair Display', serif;
-  font-size: 2rem;
-  margin-bottom: 12px;
-}
-.subtitle {
-  color: var(--text-muted);
-  font-size: 1.05rem;
-  margin-bottom: 32px;
-  line-height: 1.6;
-}
-.order-detail {
-  background: var(--bg);
-  border-radius: 8px;
-  padding: 20px;
-  margin-bottom: 24px;
-  text-align: left;
-}
-.order-detail h3 {
-  font-size: 0.85rem;
-  color: var(--text-muted);
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-  margin-bottom: 12px;
-}
-.detail-row {
-  display: flex;
-  justify-content: space-between;
-  padding: 8px 0;
-  border-bottom: 1px solid var(--border);
-  font-size: 0.95rem;
-}
-.detail-row:last-child { border-bottom: none; }
-.detail-label { color: var(--text-muted); }
-.detail-value { font-weight: 600; }
-.next-steps {
-  text-align: left;
-  background: #FFF8F0;
-  border: 1px solid #F0DCC8;
-  border-radius: 8px;
-  padding: 20px;
-  margin-bottom: 28px;
-}
-.next-steps h3 {
-  font-size: 1rem;
-  margin-bottom: 12px;
-  color: var(--primary);
-}
-.next-steps ol {
-  padding-left: 20px;
-  color: var(--text-muted);
-  font-size: 0.92rem;
-  line-height: 1.8;
-}
-.next-steps strong { color: var(--text); }
-.btn-home {
-  display: inline-block;
-  background: var(--primary);
-  color: #fff;
-  text-decoration: none;
-  padding: 14px 32px;
-  border-radius: 8px;
-  font-weight: 600;
-  transition: background 0.2s;
-}
-.btn-home:hover { background: #B85E1E; }
-#loading { color: var(--text-muted); }
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Inter',sans-serif;background:#FDF8F3;color:#2C2420;min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px}
+.card{background:#fff;border-radius:16px;padding:48px;max-width:560px;width:100%;text-align:center;box-shadow:0 8px 32px rgba(44,36,32,.1)}
+.icon{font-size:64px;margin-bottom:16px}
+h1{font-family:'Playfair Display',serif;font-size:28px;color:#6B4226;margin-bottom:12px}
+.subtitle{font-size:16px;color:#6B5D52;line-height:1.6;margin-bottom:32px}
+.steps{text-align:left;margin-bottom:32px}
+.step{display:flex;gap:14px;padding:14px 0;border-bottom:1px solid #E8DDD2}
+.step:last-child{border:none}
+.step-num{width:32px;height:32px;background:#D4812A;color:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;flex-shrink:0}
+.step-text h3{font-size:15px;font-weight:600;margin-bottom:2px}
+.step-text p{font-size:13px;color:#6B5D52}
+.email-note{background:#F5EDE3;padding:16px 20px;border-radius:10px;font-size:14px;color:#6B5D52;margin-bottom:24px;line-height:1.5}
+.email-note strong{color:#2C2420}
+.btn{display:inline-flex;align-items:center;gap:8px;background:#D4812A;color:#fff;padding:14px 32px;border-radius:50px;font-size:15px;font-weight:600;text-decoration:none;transition:background .2s}
+.btn:hover{background:#C0721F}
+.upload-section{background:#fff;border:2px dashed #E8DDD2;border-radius:12px;padding:32px;margin-bottom:24px;cursor:pointer;transition:all .2s}
+.upload-section:hover{border-color:#D4812A;background:rgba(212,129,42,.03)}
+.upload-section h3{font-size:16px;font-weight:600;margin-bottom:8px}
+.upload-section p{font-size:14px;color:#6B5D52}
+.upload-section.done{border-color:#2D8B55;background:rgba(45,139,85,.04)}
+#uploadResult{display:none;background:#EBF5EE;padding:12px 16px;border-radius:8px;font-size:14px;color:#2D8B55;font-weight:500;margin-bottom:16px}
 </style>
 </head>
 <body>
-<div class="success-card">
-  <div id="loading">Loading order details...</div>
-  <div id="content" style="display:none;">
-    <div class="success-icon">✓</div>
-    <h1>Order Confirmed!</h1>
-    <p class="subtitle">Thank you for your purchase. Your pet is about to become a masterpiece.</p>
-    <div class="order-detail">
-      <h3>Order Summary</h3>
-      <div class="detail-row">
-        <span class="detail-label">Email</span>
-        <span class="detail-value" id="orderEmail">—</span>
-      </div>
-      <div class="detail-row">
-        <span class="detail-label">Art Style</span>
-        <span class="detail-value" id="orderStyle">—</span>
-      </div>
-      <div class="detail-row">
-        <span class="detail-label">Total Paid</span>
-        <span class="detail-value" id="orderTotal">—</span>
-      </div>
-      <div class="detail-row">
-        <span class="detail-label">Status</span>
-        <span class="detail-value" style="color: var(--success);">Payment Confirmed ✓</span>
+<div class="card">
+  <div class="icon">🎉</div>
+  <h1>Thank You for Your Order!</h1>
+  <p class="subtitle">Your custom pet portrait is on its way. Here's what happens next:</p>
+
+  <div class="steps">
+    <div class="step">
+      <div class="step-num">1</div>
+      <div class="step-text">
+        <h3>We Receive Your Order</h3>
+        <p>Our team gets your order details and pet photo (if uploaded).</p>
       </div>
     </div>
-    <div class="next-steps">
-      <h3>What Happens Next</h3>
-      <ol>
-        <li><strong>Send us your pet's photo</strong> — Reply to your confirmation email or message us at <strong>hello@pawcanvas.com</strong> with a clear photo of your pet</li>
-        <li><strong>We'll create your portrait</strong> — Our team transforms your photo into your chosen art style (1-2 business days)</li>
-        <li><strong>Preview & approve</strong> — We'll email you a digital preview. Revisions are free!</li>
-        <li><strong>We print & ship</strong> — After approval, production takes 3-5 days + 3-7 days shipping</li>
-      </ol>
+    <div class="step">
+      <div class="step-num">2</div>
+      <div class="step-text">
+        <h3>Artwork Proof in 24 Hours</h3>
+        <p>We'll email you a preview of your pet's portrait for approval.</p>
+      </div>
     </div>
-    <a href="/" class="btn-home">← Back to PawCanvas</a>
+    <div class="step">
+      <div class="step-num">3</div>
+      <div class="step-text">
+        <h3>Unlimited Revisions</h3>
+        <p>Not quite right? Tell us what to change — free unlimited edits.</p>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">4</div>
+      <div class="step-text">
+        <h3>Print &amp; Ship</h3>
+        <p>Once approved, we print and ship your product. Usually arrives in 5-7 business days.</p>
+      </div>
+    </div>
   </div>
+
+  <div id="uploadSection" class="upload-section" onclick="document.getElementById('photoInput').click()" style="display:none">
+    <h3>📸 Upload Your Pet's Photo</h3>
+    <p>You chose to send your photo later. Click here to upload it now, or reply to your confirmation email.</p>
+    <input type="file" id="photoInput" accept="image/*" style="display:none" onchange="handlePostUpload(this)">
+  </div>
+  <div id="uploadResult"></div>
+
+  <div class="email-note">
+    <strong>Check your email!</strong> We've sent a confirmation with your order details. If you haven't uploaded a pet photo yet, you can reply to that email with your photo attached.
+  </div>
+
+  <a href="/" class="btn">← Continue Shopping</a>
 </div>
+
 <script>
-async function loadOrder() {
-  const params = new URLSearchParams(window.location.search);
-  const sessionId = params.get('session_id');
-  if (!sessionId) {
-    document.getElementById('loading').textContent = 'No order found.';
-    return;
-  }
+// Check if the customer chose to send photo later
+const orderData = localStorage.getItem('pawcanvas_order');
+if (orderData) {
   try {
-    const res = await fetch(`/api/session/${sessionId}`);
-    const data = await res.json();
-    document.getElementById('orderEmail').textContent = data.customerEmail || '—';
-    document.getElementById('orderStyle').textContent = data.metadata?.art_style || 'Watercolor';
-    document.getElementById('orderTotal').textContent = data.amountTotal ? '$' + (data.amountTotal / 100).toFixed(2) : '—';
-    document.getElementById('loading').style.display = 'none';
-    document.getElementById('content').style.display = 'block';
-  } catch (e) {
-    document.getElementById('loading').textContent = 'Order confirmed! Check your email for details.';
-    document.getElementById('content').style.display = 'block';
-    document.getElementById('loading').style.display = 'none';
-  }
+    const order = JSON.parse(orderData);
+    const hasSendLater = order.items?.some(i => i.sendLater);
+    if (hasSendLater) {
+      document.getElementById('uploadSection').style.display = 'block';
+    }
+  } catch(e) {}
+  localStorage.removeItem('pawcanvas_order');
 }
-loadOrder();
+
+function handlePostUpload(input) {
+  const file = input.files[0];
+  if (!file) return;
+  document.getElementById('uploadSection').classList.add('done');
+  document.getElementById('uploadSection').innerHTML = '<h3>✅ Photo Uploaded</h3><p>' + file.name + ' — We\'ll use this for your portrait.</p>';
+  document.getElementById('uploadResult').style.display = 'block';
+  document.getElementById('uploadResult').textContent = 'Photo received! We\'ll start working on your artwork right away.';
+}
 </script>
 </body>
 </html>

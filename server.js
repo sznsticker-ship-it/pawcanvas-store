@@ -2,16 +2,17 @@ require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 const path = require('path');
+const fs = require('fs');
 
 const app = express();
 const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
 const PRINTIFY_API = 'https://api.printify.com/v1';
 const PRINTIFY_TOKEN = process.env.PRINTIFY_API_TOKEN;
 const SHOP_ID = process.env.PRINTIFY_SHOP_ID;
+const OWNER_EMAIL = process.env.OWNER_EMAIL || 'sznsticker@gmail.com';
 
-// Stripe webhook needs raw body
+// Stripe webhook needs raw body — must come before express.json()
 app.post('/api/webhook', express.raw({ type: 'application/json' }), async (req, res) => {
-  const sig = req.headers['stripe-signature'];
   let event;
   try {
     event = JSON.parse(req.body);
@@ -22,144 +23,126 @@ app.post('/api/webhook', express.raw({ type: 'application/json' }), async (req, 
 
   if (event.type === 'checkout.session.completed') {
     const session = event.data.object;
-    console.log('✅ Payment successful for:', session.customer_details?.email);
-    console.log('📦 Order metadata:', session.metadata);
+    const email = session.customer_details?.email;
+    const orderMeta = session.metadata;
+    console.log('═══════════════════════════════════');
+    console.log('✅ NEW ORDER RECEIVED');
+    console.log('═══════════════════════════════════');
+    console.log('Customer:', email);
+    console.log('Amount:', '$' + (session.amount_total / 100).toFixed(2));
+    console.log('Order details:', orderMeta?.order_summary);
+    console.log('═══════════════════════════════════');
+
+    // Save order to file for admin dashboard
+    const order = {
+      id: session.id,
+      date: new Date().toISOString(),
+      email,
+      amount: session.amount_total,
+      shipping: session.shipping_details || null,
+      items: JSON.parse(orderMeta?.items_json || '[]'),
+      status: 'pending_artwork'
+    };
+    saveOrder(order);
   }
 
   res.json({ received: true });
 });
 
-app.use(express.json());
+app.use(express.json({ limit: '50mb' }));
 app.use(cors());
 app.use(express.static(path.join(__dirname, 'public')));
 
-// Product catalog — 6 product types, each with size variants
-const PRODUCTS = [
-  {
-    id: 'canvas',
-    name: 'Pet Portrait Canvas',
-    subtitle: 'Gallery-Ready Stretched Canvas',
-    description: 'Museum-quality stretched canvas, ready to hang. Your pet transformed into a stunning work of art.',
-    category: 'canvas',
-    badge: 'Best Seller',
-    sizes: [
-      { sizeId: 'canvas-8x10',  label: '8" × 10"',  price: 3999, priceDisplay: '$39.99' },
-      { sizeId: 'canvas-16x20', label: '16" × 20"', price: 6999, priceDisplay: '$69.99' },
-      { sizeId: 'canvas-24x36', label: '24" × 36"', price: 9999, priceDisplay: '$99.99' }
-    ]
-  },
-  {
-    id: 'blanket',
-    name: 'Pet Portrait Blanket',
-    subtitle: 'Velveteen Plush Throw',
-    description: 'Ultra-soft velveteen plush blanket with your pet\'s portrait. Perfect for cozy nights on the couch.',
-    category: 'blanket',
-    badge: 'Popular',
-    sizes: [
-      { sizeId: 'blanket-50x60', label: '50" × 60"', price: 6499, priceDisplay: '$64.99' },
-      { sizeId: 'blanket-60x80', label: '60" × 80"', price: 7999, priceDisplay: '$79.99' }
-    ]
-  },
-  {
-    id: 'mug',
-    name: 'Pet Portrait Mug',
-    subtitle: 'Classic White Ceramic',
-    description: 'Start every morning with your best friend. Premium white ceramic with vivid wrap-around print.',
-    category: 'mug',
-    badge: 'Gift Favorite',
-    sizes: [
-      { sizeId: 'mug-11oz', label: '11 oz', price: 2799, priceDisplay: '$27.99' },
-      { sizeId: 'mug-15oz', label: '15 oz', price: 3299, priceDisplay: '$32.99' }
-    ]
-  },
-  {
-    id: 'phone',
-    name: 'Pet Portrait Phone Case',
-    subtitle: 'Tough Dual-Layer Case',
-    description: 'Dual-layer tough case with your pet\'s portrait. Impact resistant with glossy vivid printing.',
-    category: 'phone',
-    badge: null,
-    sizes: [
-      { sizeId: 'phone-case', label: 'All Models', price: 3499, priceDisplay: '$34.99' }
-    ]
-  },
-  {
-    id: 'pillow',
-    name: 'Pet Portrait Pillow',
-    subtitle: 'Spun Polyester Square',
-    description: 'Decorative throw pillow with your pet\'s portrait. Soft, huggable, and makes any couch special.',
-    category: 'pillow',
-    badge: null,
-    sizes: [
-      { sizeId: 'pillow-16x16', label: '16" × 16"', price: 4499, priceDisplay: '$44.99' }
-    ]
-  },
-  {
-    id: 'tote',
-    name: 'Pet Portrait Tote',
-    subtitle: 'Cotton Canvas Tote Bag',
-    description: 'Take your pet everywhere. Durable cotton canvas tote with full-color portrait printing.',
-    category: 'tote',
-    badge: null,
-    sizes: [
-      { sizeId: 'tote-bag', label: 'Standard', price: 2999, priceDisplay: '$29.99' }
-    ]
-  }
-];
+// ========== ORDER STORAGE ==========
+const ORDERS_FILE = path.join(__dirname, 'orders.json');
 
-// Flat lookup for checkout
-const ALL_VARIANTS = {};
-PRODUCTS.forEach(p => {
-  p.sizes.forEach(s => {
-    ALL_VARIANTS[s.sizeId] = { ...s, productName: p.name, subtitle: p.subtitle, category: p.category };
-  });
-});
-
-// API Routes
-app.get('/api/products', (req, res) => {
-  res.json(PRODUCTS);
-});
-
-app.get('/api/config', (req, res) => {
-  res.json({ publishableKey: process.env.STRIPE_PUBLISHABLE_KEY });
-});
-
-// Create Stripe Checkout session
-app.post('/api/create-checkout-session', async (req, res) => {
+function loadOrders() {
   try {
-    const { items, customerEmail, artStyle, petNotes } = req.body;
+    if (fs.existsSync(ORDERS_FILE)) return JSON.parse(fs.readFileSync(ORDERS_FILE, 'utf8'));
+  } catch(e) { console.error('Error loading orders:', e.message); }
+  return [];
+}
 
-    const lineItems = items.map(item => {
-      const variant = ALL_VARIANTS[item.id];
-      if (!variant) throw new Error(`Product not found: ${item.id}`);
-      return {
-        price_data: {
-          currency: 'usd',
-          product_data: {
-            name: `${variant.productName} (${variant.label})`,
-            description: `${variant.subtitle} — Art Style: ${artStyle || 'Watercolor'}`,
-          },
-          unit_amount: variant.price,
+function saveOrder(order) {
+  const orders = loadOrders();
+  orders.push(order);
+  fs.writeFileSync(ORDERS_FILE, JSON.stringify(orders, null, 2));
+  console.log(`📋 Order saved (${orders.length} total)`);
+}
+
+// ========== CHECKOUT ==========
+app.post('/api/create-checkout', async (req, res) => {
+  try {
+    const { items, subtotal } = req.body;
+    if (!items || items.length === 0) {
+      return res.status(400).json({ error: 'No items in cart' });
+    }
+
+    // Build Stripe line items
+    const lineItems = items.map(item => ({
+      price_data: {
+        currency: 'usd',
+        product_data: {
+          name: `${item.product} (${item.size})`,
+          description: `Style: ${item.style} · Pet: ${item.petName || 'Not specified'}${item.sendLater ? ' · Photo: will send later' : ''}`,
         },
-        quantity: item.quantity || 1,
-      };
-    });
+        unit_amount: Math.round(item.price * 100),
+      },
+      quantity: 1,
+    }));
+
+    // Build order summary for metadata (Stripe metadata max 500 chars per value)
+    const orderSummary = items.map(i =>
+      `${i.product} | ${i.size} | ${i.style} | Pet: ${i.petName}`
+    ).join(' || ');
 
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ['card'],
       line_items: lineItems,
       mode: 'payment',
       success_url: `${req.protocol}://${req.get('host')}/success.html?session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${req.protocol}://${req.get('host')}/#shop`,
-      customer_email: customerEmail || undefined,
+      cancel_url: `${req.protocol}://${req.get('host')}/#products`,
       metadata: {
-        art_style: artStyle || 'Watercolor',
-        pet_notes: petNotes || '',
-        items: JSON.stringify(items),
+        order_summary: orderSummary.slice(0, 500),
+        items_json: JSON.stringify(items).slice(0, 500),
       },
       shipping_address_collection: {
         allowed_countries: ['US', 'CA', 'GB', 'AU'],
       },
+    });
+
+    res.json({ url: session.url, sessionId: session.id });
+  } catch (error) {
+    console.error('Checkout error:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Legacy endpoint (keep for compatibility)
+app.post('/api/create-checkout-session', async (req, res) => {
+  try {
+    const { items, customerEmail, artStyle } = req.body;
+    const lineItems = items.map(item => ({
+      price_data: {
+        currency: 'usd',
+        product_data: {
+          name: item.name || 'PawCanvas Product',
+          description: `Art Style: ${artStyle || 'Watercolor'}`,
+        },
+        unit_amount: item.price || 3999,
+      },
+      quantity: item.quantity || 1,
+    }));
+
+    const session = await stripe.checkout.sessions.create({
+      payment_method_types: ['card'],
+      line_items: lineItems,
+      mode: 'payment',
+      success_url: `${req.protocol}://${req.get('host')}/success.html?session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: `${req.protocol}://${req.get('host')}/#products`,
+      customer_email: customerEmail || undefined,
+      metadata: { art_style: artStyle || 'Watercolor' },
+      shipping_address_collection: { allowed_countries: ['US', 'CA', 'GB', 'AU'] },
     });
 
     res.json({ url: session.url, sessionId: session.id });
@@ -184,20 +167,15 @@ app.get('/api/session/:sessionId', async (req, res) => {
   }
 });
 
-// Admin: list orders from Printify
-app.get('/api/admin/orders', async (req, res) => {
-  try {
-    const response = await fetch(`${PRINTIFY_API}/shops/${SHOP_ID}/orders.json`, {
-      headers: { 'Authorization': `Bearer ${PRINTIFY_TOKEN}` }
-    });
-    const data = await response.json();
-    res.json(data);
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
+// ========== ADMIN ENDPOINTS ==========
+
+// View all orders
+app.get('/api/admin/orders', (req, res) => {
+  const orders = loadOrders();
+  res.json(orders.reverse()); // newest first
 });
 
-// Printify: get catalog blueprints
+// Printify catalog
 app.get('/api/admin/catalog', async (req, res) => {
   try {
     const response = await fetch(`${PRINTIFY_API}/catalog/blueprints.json`, {
@@ -208,6 +186,10 @@ app.get('/api/admin/catalog', async (req, res) => {
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
+});
+
+app.get('/api/config', (req, res) => {
+  res.json({ publishableKey: process.env.STRIPE_PUBLISHABLE_KEY });
 });
 
 // SPA fallback
