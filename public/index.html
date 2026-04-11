@@ -209,6 +209,8 @@ a{color:inherit;text-decoration:none}
 .cart-item-info h4{font-size:14px;font-weight:600;margin-bottom:4px}
 .cart-item-info .item-details{font-size:12px;color:var(--text-light);line-height:1.5}
 .cart-item-info .item-price{font-size:15px;font-weight:700;color:var(--brown-dark);margin-top:6px}
+.cart-extras{display:flex;gap:6px;margin-top:4px;flex-wrap:wrap}
+.cart-extra-tag{font-size:11px;padding:2px 8px;border-radius:12px;background:var(--cream);color:var(--brown-dark);font-weight:600;border:1px solid var(--border)}
 .cart-item .remove-item{background:none;font-size:12px;color:var(--accent);font-weight:500;align-self:flex-start;padding:4px}
 .cart-footer{padding:20px 24px;border-top:1px solid var(--border);background:var(--cream)}
 .cart-subtotal{display:flex;justify-content:space-between;margin-bottom:4px;font-size:15px;font-weight:600}
@@ -254,7 +256,7 @@ a{color:inherit;text-decoration:none}
 <body>
 
 <!-- Announcement Bar -->
-<div class="announce">FREE SHIPPING on orders over $75 — <span>Handcrafted artwork, made just for your pet</span></div>
+<div class="announce">FREE SHIPPING on orders over $60 — <span>Handcrafted artwork, made just for your pet</span></div>
 
 <!-- Nav -->
 <nav class="nav">
@@ -303,7 +305,7 @@ a{color:inherit;text-decoration:none}
     <div class="trust-item"><span class="icon">🎨</span> Proof in 24 Hours</div>
     <div class="trust-item"><span class="icon">✏️</span> Unlimited Free Revisions</div>
     <div class="trust-item"><span class="icon">😊</span> 100% Satisfaction Guarantee</div>
-    <div class="trust-item"><span class="icon">🚚</span> Free Shipping Over $75</div>
+    <div class="trust-item"><span class="icon">🚚</span> Free Shipping Over $60</div>
   </div>
 </div>
 
@@ -514,9 +516,9 @@ a{color:inherit;text-decoration:none}
     <h3>Your Cart (<span id="cartItemCount">0</span>)</h3>
     <button class="cart-close" onclick="closeCart()">✕</button>
   </div>
-  <div class="cart-shipping-bar" id="shippingBar">You're <strong>$75.00</strong> away from FREE shipping</div>
+  <div class="cart-shipping-bar" id="shippingBar">You're <strong>$60.00</strong> away from FREE shipping</div>
   <div class="cart-items" id="cartItems">
-    <div class="cart-empty" id="cartEmpty">Your cart is empty. Start shopping to add custom pet products.</div>
+    <div class="cart-empty">Your cart is empty. Start shopping to add custom pet products.</div>
   </div>
   <div class="cart-footer" id="cartFooter" style="display:none">
     <div class="cart-subtotal"><span>Subtotal</span><span id="cartSubtotal">$0.00</span></div>
@@ -537,25 +539,25 @@ const products = [
     id:'canvas', name:'Pet Portrait Canvas', subtitle:'Gallery-Ready Stretched Canvas',
     img:'img/product-canvas-portrait.jpg', badge:'Best Seller', reviews:'',
     sizes:[
-      {label:'8" × 10"',price:39.99,printify:{blueprint:'Canvas Print',area:'8×10 (2400×3000px)',dpi:300}},
-      {label:'16" × 20"',price:59.99,printify:{blueprint:'Canvas Print',area:'16×20 (4800×6000px)',dpi:300}},
-      {label:'24" × 36"',price:89.99,printify:{blueprint:'Canvas Print',area:'24×36 (7200×10800px)',dpi:300}}
+      {label:'8" × 10"',price:40.99,printify:{blueprint:'Canvas Print',area:'8×10 (2400×3000px)',dpi:300}},
+      {label:'16" × 20"',price:54.99,printify:{blueprint:'Canvas Print',area:'16×20 (4800×6000px)',dpi:300}},
+      {label:'24" × 36"',price:74.99,printify:{blueprint:'Canvas Print',area:'24×36 (7200×10800px)',dpi:300}}
     ]
   },
   {
     id:'blanket', name:'Pet Portrait Blanket', subtitle:'Velveteen Plush Throw',
     img:'img/product-blanket-portrait.jpg', badge:'Popular', reviews:'',
     sizes:[
-      {label:'50" × 60"',price:64.99,printify:{blueprint:'Velveteen Blanket',area:'50×60 (6000×7200px)',dpi:150}},
-      {label:'60" × 80"',price:84.99,printify:{blueprint:'Velveteen Blanket',area:'60×80 (7200×9600px)',dpi:150}}
+      {label:'50" × 60"',price:59.99,printify:{blueprint:'Velveteen Blanket',area:'50×60 (6000×7200px)',dpi:150}},
+      {label:'60" × 80"',price:69.99,printify:{blueprint:'Velveteen Blanket',area:'60×80 (7200×9600px)',dpi:150}}
     ]
   },
   {
     id:'mug', name:'Pet Portrait Mug', subtitle:'Classic White Ceramic',
     img:'img/product-mug-portrait.jpg', badge:'Gift Favorite', reviews:'',
     sizes:[
-      {label:'11 oz',price:27.99,printify:{blueprint:'White Glossy Mug',area:'11oz (3240×1380px)',dpi:300}},
-      {label:'15 oz',price:31.99,printify:{blueprint:'White Glossy Mug',area:'15oz (3540×1500px)',dpi:300}}
+      {label:'11 oz',price:29.99,printify:{blueprint:'White Glossy Mug',area:'11oz (3240×1380px)',dpi:300}},
+      {label:'15 oz',price:34.99,printify:{blueprint:'White Glossy Mug',area:'15oz (3540×1500px)',dpi:300}}
     ]
   },
   {
@@ -577,7 +579,7 @@ const products = [
     id:'tote', name:'Pet Portrait Tote', subtitle:'Natural Cotton Canvas',
     img:'img/product-tote-portrait.jpg', badge:'New', reviews:'',
     sizes:[
-      {label:'Standard',price:29.99,printify:{blueprint:'Cotton Canvas Tote',area:'Standard (3600×3600px)',dpi:300}}
+      {label:'Standard',price:34.99,printify:{blueprint:'Cotton Canvas Tote',area:'Standard (3600×3600px)',dpi:300}}
     ]
   }
 ];
@@ -822,27 +824,25 @@ function renderCart() {
   document.getElementById('cartItemCount').textContent = count;
 
   const itemsCont = document.getElementById('cartItems');
-  const empty = document.getElementById('cartEmpty');
   const footer = document.getElementById('cartFooter');
 
   if (count === 0) {
-    empty.style.display = 'block';
     footer.style.display = 'none';
-    itemsCont.innerHTML = '<div class="cart-empty" id="cartEmpty">Your cart is empty. Start shopping to add custom pet products.</div>';
+    itemsCont.innerHTML = '<div class="cart-empty">Your cart is empty. Start shopping to add custom pet products.</div>';
     return;
   }
 
-  empty.style.display = 'none';
   footer.style.display = 'block';
 
   let html = '';
   let subtotal = 0;
   cart.forEach((item, i) => {
     subtotal += item.total;
+    const extraTags = [];
+    if (item.extras.rush) extraTags.push('<span class="cart-extra-tag">⚡ Rush</span>');
+    if (item.extras.digital) extraTags.push('<span class="cart-extra-tag">📁 Digital</span>');
     let details = `Size: ${item.size} · Style: ${item.style}`;
     if (item.petName && item.petName !== 'Not specified') details += ` · Pet: ${item.petName}`;
-    if (item.extras.rush) details += ' · Rush delivery';
-    if (item.extras.digital) details += ' · Digital download';
     if (item.sendLater) details += ' · Photo: sending later';
 
     html += `
@@ -851,6 +851,7 @@ function renderCart() {
         <div class="cart-item-info">
           <h4>${item.productName}</h4>
           <div class="item-details">${details}</div>
+          ${extraTags.length ? '<div class="cart-extras">' + extraTags.join('') + '</div>' : ''}
           <div class="item-price">$${item.total.toFixed(2)}</div>
         </div>
         <button class="remove-item" onclick="removeFromCart(${i})">Remove</button>
@@ -861,7 +862,7 @@ function renderCart() {
   document.getElementById('cartSubtotal').textContent = '$' + subtotal.toFixed(2);
 
   // Shipping bar
-  const remaining = Math.max(0, 75 - subtotal);
+  const remaining = Math.max(0, 60 - subtotal);
   const shipBar = document.getElementById('shippingBar');
   if (remaining > 0) {
     shipBar.innerHTML = `You're <strong>$${remaining.toFixed(2)}</strong> away from FREE shipping`;
@@ -970,7 +971,7 @@ function downloadOrderSummary(order) {
     text += `Price:      $${item.price.toFixed(2)}\n\n`;
   });
 
-  const shipping = order.subtotal >= 75 ? 'FREE' : '$7.99';
+  const shipping = order.subtotal >= 60 ? 'FREE' : '$7.99';
   text += `═══════════════════════════════════════\n`;
   text += `Subtotal:   $${order.subtotal.toFixed(2)}\n`;
   text += `Shipping:   ${shipping}\n`;
