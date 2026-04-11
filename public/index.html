@@ -47,7 +47,7 @@ a{color:inherit;text-decoration:none}
 .hero-bullets{list-style:none;margin:0 0 28px}
 .hero-bullets li{padding:6px 0;font-size:15px;color:var(--text-light);display:flex;align-items:center;gap:10px}
 .hero-bullets li::before{content:"✓";background:var(--green);color:var(--white);width:22px;height:22px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;flex-shrink:0}
-.hero-rating{display:flex;align-items:center;gap:8px;font-size:14px;color:var(--text-light);margin-bottom:28px}
+.hero-rating{font-size:14px;color:var(--text-light);margin-bottom:28px;letter-spacing:1.5px;text-transform:uppercase;font-weight:600}
 .stars{color:#E8A63A;font-size:16px;letter-spacing:1px}
 .hero-cta{display:inline-flex;align-items:center;gap:10px;background:var(--accent);color:var(--white);padding:16px 36px;border-radius:50px;font-size:16px;font-weight:600;transition:background .2s}
 .hero-cta:hover{background:var(--accent-hover)}
@@ -244,12 +244,17 @@ a{color:inherit;text-decoration:none}
   .product-grid{grid-template-columns:1fr}
   .hero-inner{padding:32px 16px}
 }
+
+.star-picker span:hover,.star-picker span:hover ~ span{color:var(--border) !important}
+.star-picker:hover span{color:#E8A63A !important}
+.star-picker span:hover ~ span{color:var(--border) !important}
+.review-empty{grid-column:1/-1}
 </style>
 </head>
 <body>
 
 <!-- Announcement Bar -->
-<div class="announce">FREE SHIPPING on orders over $75 — <span>Artwork proof in 24 hours</span></div>
+<div class="announce">FREE SHIPPING on orders over $75 — <span>Handcrafted artwork, made just for your pet</span></div>
 
 <!-- Nav -->
 <nav class="nav">
@@ -277,7 +282,7 @@ a{color:inherit;text-decoration:none}
 <section class="hero">
   <div class="hero-inner">
     <div class="hero-text">
-      <div class="hero-rating"><span class="stars">★★★★★</span> Rated 4.9 from 2,400+ happy pet parents</div>
+      <div class="hero-rating">Custom Pet Art — Handcrafted With Love</div>
       <h1>Turn Your Pet Into a <em>Masterpiece</em></h1>
       <ul class="hero-bullets">
         <li>Artwork proof ready in 24 hours</li>
@@ -346,27 +351,64 @@ a{color:inherit;text-decoration:none}
 <!-- Reviews -->
 <section class="section" id="reviews">
   <div class="section-header">
-    <h2>What Pet Parents Are Saying</h2>
-    <p>Join thousands of happy customers who turned their pets into art.</p>
+    <h2>Customer Reviews</h2>
+    <p>Hear from real pet parents who've received their custom artwork.</p>
   </div>
-  <div class="review-grid">
-    <div class="review-card">
-      <span class="stars">★★★★★</span>
-      <p>"I ordered a canvas portrait of my late dog Max. When I saw the proof, I literally cried. The watercolor style captured his personality perfectly. It now hangs in our living room."</p>
-      <span class="author">— Sarah M., Canvas Portrait</span>
-    </div>
-    <div class="review-card">
-      <span class="stars">★★★★★</span>
-      <p>"Got matching mugs for my whole family with each of our cats. The pop art style is SO fun. They sent me the proof overnight and it was perfect on the first try."</p>
-      <span class="author">— Jessica R., Custom Mug</span>
-    </div>
-    <div class="review-card">
-      <span class="stars">★★★★★</span>
-      <p>"This was a gift for my mom after her dog passed. She opens the blanket and just holds it. Beautiful quality, beautiful art. Worth every penny."</p>
-      <span class="author">— David L., Pet Blanket</span>
+  <div id="reviewsList" class="review-grid">
+    <div class="review-empty" id="reviewsEmpty">
+      <p style="text-align:center;color:var(--text-light);font-size:15px;padding:40px 20px;">
+        Be the first to share your PawCanvas experience.<br>
+        <button onclick="openReviewForm()" style="margin-top:16px;background:var(--accent);color:#fff;padding:12px 28px;border-radius:50px;font-size:14px;font-weight:600;border:none;cursor:pointer">Write a Review</button>
+      </p>
     </div>
   </div>
 </section>
+
+<!-- Review Form Modal -->
+<div class="modal-overlay" id="reviewModal">
+  <div class="modal" style="max-width:480px;padding:32px">
+    <button class="modal-close" onclick="closeReviewForm()">&times;</button>
+    <h2 style="font-size:22px;margin-bottom:4px">Share Your Experience</h2>
+    <p style="font-size:14px;color:var(--text-light);margin-bottom:24px">Your honest feedback helps other pet parents.</p>
+    <form id="reviewForm" onsubmit="submitReview(event)">
+      <div style="margin-bottom:16px">
+        <label style="font-size:13px;font-weight:600;display:block;margin-bottom:6px">Your Rating</label>
+        <div id="starPicker" class="star-picker" style="font-size:28px;cursor:pointer;color:var(--border)">
+          <span onclick="setRating(1)" data-star="1">★</span>
+          <span onclick="setRating(2)" data-star="2">★</span>
+          <span onclick="setRating(3)" data-star="3">★</span>
+          <span onclick="setRating(4)" data-star="4">★</span>
+          <span onclick="setRating(5)" data-star="5">★</span>
+        </div>
+      </div>
+      <div style="margin-bottom:16px">
+        <label style="font-size:13px;font-weight:600;display:block;margin-bottom:6px">Your Name</label>
+        <input type="text" id="reviewName" required placeholder="Jane D." style="width:100%;padding:10px 14px;border:1px solid var(--border);border-radius:var(--radius-sm);font-size:14px;font-family:inherit">
+      </div>
+      <div style="margin-bottom:16px">
+        <label style="font-size:13px;font-weight:600;display:block;margin-bottom:6px">Product Ordered</label>
+        <select id="reviewProduct" style="width:100%;padding:10px 14px;border:1px solid var(--border);border-radius:var(--radius-sm);font-size:14px;font-family:inherit;background:#fff">
+          <option value="">Select product...</option>
+          <option>Canvas Portrait</option>
+          <option>Pet Blanket</option>
+          <option>Pet Mug</option>
+          <option>Phone Case</option>
+          <option>Pillow</option>
+          <option>Tote Bag</option>
+        </select>
+      </div>
+      <div style="margin-bottom:16px">
+        <label style="font-size:13px;font-weight:600;display:block;margin-bottom:6px">Your Review</label>
+        <textarea id="reviewText" required rows="4" placeholder="Tell us about your experience..." style="width:100%;padding:10px 14px;border:1px solid var(--border);border-radius:var(--radius-sm);font-size:14px;font-family:inherit;resize:vertical"></textarea>
+      </div>
+      <div style="margin-bottom:20px">
+        <label style="font-size:13px;font-weight:600;display:block;margin-bottom:6px">Upload a Photo (optional)</label>
+        <input type="file" id="reviewPhoto" accept="image/*" style="font-size:13px">
+      </div>
+      <button type="submit" style="width:100%;padding:14px;background:var(--green);color:#fff;border:none;border-radius:50px;font-size:15px;font-weight:600;cursor:pointer">Submit Review</button>
+    </form>
+  </div>
+</div>
 
 <!-- Guarantee -->
 <section class="guarantee" id="guarantee-section">
@@ -391,7 +433,7 @@ a{color:inherit;text-decoration:none}
       <div class="modal-form" id="modalForm">
         <h2 id="modalTitle"></h2>
         <p class="modal-subtitle" id="modalSubtitle"></p>
-        <div class="modal-rating"><span class="stars">★★★★★</span> <span id="modalReviews"></span></div>
+        <div class="modal-rating" id="modalRatingContainer" style="display:none"><span class="stars">★★★★★</span> <span id="modalReviews"></span></div>
         <div class="modal-price" id="modalPrice"></div>
 
         <!-- Wizard Progress -->
@@ -493,7 +535,7 @@ a{color:inherit;text-decoration:none}
 const products = [
   {
     id:'canvas', name:'Pet Portrait Canvas', subtitle:'Gallery-Ready Stretched Canvas',
-    img:'img/product-canvas-portrait.jpg', badge:'Best Seller', reviews:'1,082 reviews',
+    img:'img/product-canvas-portrait.jpg', badge:'Best Seller', reviews:'',
     sizes:[
       {label:'8" × 10"',price:39.99,printify:{blueprint:'Canvas Print',area:'8×10 (2400×3000px)',dpi:300}},
       {label:'16" × 20"',price:59.99,printify:{blueprint:'Canvas Print',area:'16×20 (4800×6000px)',dpi:300}},
@@ -502,7 +544,7 @@ const products = [
   },
   {
     id:'blanket', name:'Pet Portrait Blanket', subtitle:'Velveteen Plush Throw',
-    img:'img/product-blanket-portrait.jpg', badge:'Popular', reviews:'847 reviews',
+    img:'img/product-blanket-portrait.jpg', badge:'Popular', reviews:'',
     sizes:[
       {label:'50" × 60"',price:64.99,printify:{blueprint:'Velveteen Blanket',area:'50×60 (6000×7200px)',dpi:150}},
       {label:'60" × 80"',price:84.99,printify:{blueprint:'Velveteen Blanket',area:'60×80 (7200×9600px)',dpi:150}}
@@ -510,7 +552,7 @@ const products = [
   },
   {
     id:'mug', name:'Pet Portrait Mug', subtitle:'Classic White Ceramic',
-    img:'img/product-mug-portrait.jpg', badge:'Gift Favorite', reviews:'1,437 reviews',
+    img:'img/product-mug-portrait.jpg', badge:'Gift Favorite', reviews:'',
     sizes:[
       {label:'11 oz',price:27.99,printify:{blueprint:'White Glossy Mug',area:'11oz (3240×1380px)',dpi:300}},
       {label:'15 oz',price:31.99,printify:{blueprint:'White Glossy Mug',area:'15oz (3540×1500px)',dpi:300}}
@@ -518,7 +560,7 @@ const products = [
   },
   {
     id:'phone', name:'Pet Portrait Phone Case', subtitle:'Tough Case — iPhone & Samsung',
-    img:'img/product-phonecase-portrait.jpg', badge:'', reviews:'623 reviews',
+    img:'img/product-phonecase-portrait.jpg', badge:'', reviews:'',
     sizes:[
       {label:'iPhone 15/16',price:34.99,printify:{blueprint:'Tough Phone Case',area:'iPhone (1300×2200px)',dpi:300}},
       {label:'Samsung Galaxy',price:34.99,printify:{blueprint:'Tough Phone Case',area:'Samsung (1300×2200px)',dpi:300}}
@@ -526,14 +568,14 @@ const products = [
   },
   {
     id:'pillow', name:'Pet Portrait Pillow', subtitle:'Premium Throw Pillow',
-    img:'img/product-pillow-portrait.jpg', badge:'', reviews:'519 reviews',
+    img:'img/product-pillow-portrait.jpg', badge:'', reviews:'',
     sizes:[
       {label:'18" × 18"',price:44.99,printify:{blueprint:'Throw Pillow',area:'18×18 (4050×4050px)',dpi:300}}
     ]
   },
   {
     id:'tote', name:'Pet Portrait Tote', subtitle:'Natural Cotton Canvas',
-    img:'img/product-tote-portrait.jpg', badge:'New', reviews:'312 reviews',
+    img:'img/product-tote-portrait.jpg', badge:'New', reviews:'',
     sizes:[
       {label:'Standard',price:29.99,printify:{blueprint:'Cotton Canvas Tote',area:'Standard (3600×3600px)',dpi:300}}
     ]
@@ -560,7 +602,7 @@ products.forEach(p => {
         <h3>${p.name}</h3>
         <p class="subtitle">${p.subtitle}</p>
         <div class="price">From $${p.sizes[0].price.toFixed(2)} <small>USD</small></div>
-        <div class="rating"><span class="stars">★★★★★</span> ${p.reviews}</div>
+        ${p.reviews ? '<div class="rating"><span class="stars">★★★★★</span> ' + p.reviews + '</div>' : ''}
       </div>
     </div>`;
 });
@@ -590,6 +632,7 @@ function openProduct(id) {
   document.getElementById('modalTitle').textContent = currentProduct.name;
   document.getElementById('modalSubtitle').textContent = currentProduct.subtitle;
   document.getElementById('modalReviews').textContent = currentProduct.reviews;
+  document.getElementById('modalRatingContainer').style.display = currentProduct.reviews ? 'block' : 'none';
   updatePrice();
   renderWizard();
   renderSizes();
@@ -970,6 +1013,109 @@ if (dropZone) {
     }
   });
 }
+
+
+/* ========== REAL REVIEW SYSTEM ========== */
+let selectedRating = 0;
+
+function setRating(n) {
+  selectedRating = n;
+  document.querySelectorAll('#starPicker span').forEach((s, i) => {
+    s.style.color = i < n ? '#E8A63A' : 'var(--border)';
+  });
+}
+
+function openReviewForm() {
+  document.getElementById('reviewModal').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+
+function closeReviewForm() {
+  document.getElementById('reviewModal').classList.remove('open');
+  document.body.style.overflow = '';
+}
+
+async function submitReview(e) {
+  e.preventDefault();
+  if (selectedRating === 0) { alert('Please select a star rating'); return; }
+  const review = {
+    rating: selectedRating,
+    name: document.getElementById('reviewName').value.trim(),
+    product: document.getElementById('reviewProduct').value,
+    text: document.getElementById('reviewText').value.trim(),
+    date: new Date().toISOString()
+  };
+  // Check for photo
+  const photoInput = document.getElementById('reviewPhoto');
+  if (photoInput.files[0]) {
+    const reader = new FileReader();
+    reader.onload = async function(ev) {
+      review.photo = ev.target.result;
+      await saveReview(review);
+    };
+    reader.readAsDataURL(photoInput.files[0]);
+  } else {
+    await saveReview(review);
+  }
+}
+
+async function saveReview(review) {
+  try {
+    const res = await fetch('/api/reviews', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify(review)
+    });
+    if (!res.ok) throw new Error('Failed to submit');
+    closeReviewForm();
+    document.getElementById('reviewForm').reset();
+    selectedRating = 0;
+    document.querySelectorAll('#starPicker span').forEach(s => s.style.color = 'var(--border)');
+    showToast('Thank you! Your review has been submitted for approval.');
+    loadReviews();
+  } catch(err) {
+    alert('Could not submit review. Please try again.');
+  }
+}
+
+async function loadReviews() {
+  try {
+    const res = await fetch('/api/reviews');
+    const reviews = await res.json();
+    const container = document.getElementById('reviewsList');
+    const emptyEl = document.getElementById('reviewsEmpty');
+    if (!reviews || reviews.length === 0) {
+      if(emptyEl) emptyEl.style.display = 'block';
+      return;
+    }
+    if(emptyEl) emptyEl.style.display = 'none';
+    let html = reviews.map(r => `
+      <div class="review-card">
+        <span class="stars">${'★'.repeat(r.rating)}${'☆'.repeat(5-r.rating)}</span>
+        <p>"${escapeHtml(r.text)}"</p>
+        ${r.photo ? '<img src="' + r.photo + '" alt="Customer photo" style="width:100%;max-height:200px;object-fit:cover;border-radius:8px;margin:8px 0">' : ''}
+        <span class="author">— ${escapeHtml(r.name)}${r.product ? ', ' + escapeHtml(r.product) : ''}</span>
+      </div>
+    `).join('');
+    html += `
+      <div class="review-card" style="display:flex;align-items:center;justify-content:center;border:2px dashed var(--border);background:transparent;box-shadow:none;cursor:pointer" onclick="openReviewForm()">
+        <div style="text-align:center">
+          <p style="font-size:24px;margin-bottom:8px">✍️</p>
+          <p style="font-size:14px;font-weight:600;color:var(--accent)">Write a Review</p>
+        </div>
+      </div>`;
+    container.innerHTML = html;
+  } catch(e) { /* fail silently */ }
+}
+
+function escapeHtml(text) {
+  const div = document.createElement('div');
+  div.textContent = text;
+  return div.innerHTML;
+}
+
+// Load reviews on page load
+loadReviews();
 </script>
 </body>
 </html>
