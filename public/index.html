@@ -106,7 +106,7 @@ body{font-family:var(--fb);background:var(--bg);color:var(--text);line-height:1.
 
 /* Product grid — 6 cards */
 .p-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:24px}
-.p-card{background:var(--surface);border-radius:var(--r);overflow:hidden;box-shadow:var(--sh);transition:all var(--t);position:relative}
+.p-card{background:var(--surface);border-radius:var(--r);overflow:hidden;box-shadow:var(--sh);transition:all var(--t);position:relative;cursor:pointer}
 .p-card:hover{transform:translateY(-4px);box-shadow:var(--sh-h)}
 .p-mock{position:relative;width:100%;aspect-ratio:4/3;overflow:hidden;background:#f0ebe2}
 .p-mock img.mock-bg{width:100%;height:100%;object-fit:cover;display:block}
@@ -172,6 +172,40 @@ body{font-family:var(--fb);background:var(--bg);color:var(--text);line-height:1.
 .toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(80px);background:var(--text);color:#fff;padding:12px 28px;border-radius:99px;font-size:.9rem;font-weight:500;z-index:400;opacity:0;transition:all .35s cubic-bezier(.4,0,.2,1);pointer-events:none}
 .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
 
+/* Product modal */
+.pm-ov{position:fixed;inset:0;background:rgba(44,24,16,.5);z-index:300;opacity:0;pointer-events:none;transition:opacity var(--t);display:flex;align-items:center;justify-content:center}
+.pm-ov.open{opacity:1;pointer-events:auto}
+.pm{background:var(--surface);border-radius:16px;max-width:860px;width:92vw;max-height:90vh;overflow-y:auto;box-shadow:0 20px 60px rgba(44,24,16,.25);display:flex;flex-direction:row;position:relative}
+.pm-close{position:absolute;top:16px;right:16px;background:var(--surface-off);border:none;cursor:pointer;color:var(--muted);width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;z-index:2;transition:all var(--t)}
+.pm-close:hover{background:var(--border);color:var(--text)}
+.pm-close svg{width:20px;height:20px}
+.pm-img{flex:0 0 50%;background:#f0ebe2;border-radius:16px 0 0 16px;overflow:hidden;display:flex;align-items:center;justify-content:center;min-height:320px}
+.pm-img canvas{width:100%;height:auto;display:block}
+.pm-img img{width:100%;height:100%;object-fit:cover;display:block}
+.pm-info{flex:1;padding:32px 28px;display:flex;flex-direction:column;gap:16px}
+.pm-info h2{font-family:var(--fd);font-size:1.5rem;font-weight:700;margin:0}
+.pm-info .pm-desc{font-size:.9rem;color:var(--muted);line-height:1.5}
+.pm-sizes{display:flex;gap:8px;flex-wrap:wrap}
+.pm-sizes .sz-opt{padding:8px 18px;font-size:.85rem}
+.pm-price{font-size:1.5rem;font-weight:700;color:var(--text)}
+.pm-actions{display:flex;gap:10px;flex-wrap:wrap}
+.pm-actions .add-btn{padding:12px 28px;font-size:.95rem}
+.dl-btn{background:none;border:2px solid var(--pri);color:var(--pri);padding:10px 22px;border-radius:99px;font-size:.85rem;font-weight:600;cursor:pointer;font-family:var(--fb);transition:all var(--t);display:inline-flex;align-items:center;gap:6px}
+.dl-btn:hover{background:var(--pri-l)}
+.dl-btn svg{width:16px;height:16px}
+.pm-specs{border-top:1px solid var(--border);padding-top:16px;margin-top:auto}
+.pm-specs h4{font-size:.85rem;font-weight:600;margin-bottom:8px;text-transform:uppercase;letter-spacing:.04em;color:var(--muted)}
+.pm-specs table{width:100%;font-size:.8rem;border-collapse:collapse}
+.pm-specs td{padding:6px 8px;border-bottom:1px solid var(--border)}
+.pm-specs td:first-child{color:var(--muted);font-weight:500;width:40%}
+.dl-order-btn{width:100%;background:none;border:2px solid var(--pri);color:var(--pri);padding:10px;border-radius:99px;font-size:.85rem;font-weight:600;cursor:pointer;font-family:var(--fb);transition:all var(--t);margin-top:8px;display:flex;align-items:center;justify-content:center;gap:6px}
+.dl-order-btn:hover{background:var(--pri-l)}
+.dl-order-btn svg{width:16px;height:16px}
+@media(max-width:768px){
+  .pm{flex-direction:column}
+  .pm-img{flex:none;border-radius:16px 16px 0 0;min-height:240px}
+}
+
 .footer{border-top:1px solid var(--border);padding:40px 24px;text-align:center;margin-top:40px}
 .footer p{font-size:.8rem;color:var(--muted)}
 .footer-lk{display:flex;justify-content:center;gap:24px;margin-top:8px}
@@ -204,7 +238,7 @@ body{font-family:var(--fb);background:var(--bg);color:var(--text);line-height:1.
   <div class="hero-ct">
     <h1>Turn Your Pet Into a <em>Masterpiece</em></h1>
     <p>Upload a photo of your furry friend, pick an art style, and we'll create a stunning custom portrait on premium products — shipped to your door.</p>
-    <a href="#upload" class="cta" onclick="document.getElementById('file-in').click();return false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>Upload Your Pet's Photo</a>
+    <a href="#upload" class="cta"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>Get Started</a>
     <div class="trust"><span><svg width="14" height="14" viewBox="0 0 24 24" fill="#D4722A"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>4.9/5 from 2,400+ reviews</span><span>Free shipping over $75</span><span>Satisfaction guaranteed</span></div>
   </div>
 </section>
@@ -266,6 +300,24 @@ body{font-family:var(--fb);background:var(--bg);color:var(--text);line-height:1.
 
 <footer class="footer"><p>&copy; 2026 PawCanvas. All rights reserved.</p><div class="footer-lk"><a href="#">Shipping & Returns</a><a href="#">Privacy Policy</a><a href="#">Contact Us</a></div></footer>
 
+<div class="pm-ov" id="pm-ov" onclick="closeProdModal()">
+  <div class="pm" onclick="event.stopPropagation()">
+    <button class="pm-close" onclick="closeProdModal()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+    <div class="pm-img" id="pm-img"></div>
+    <div class="pm-info">
+      <h2 id="pm-name"></h2>
+      <p class="pm-desc" id="pm-desc"></p>
+      <div class="pm-sizes" id="pm-sizes"></div>
+      <div class="pm-price" id="pm-price"></div>
+      <div class="pm-actions">
+        <button class="add-btn" id="pm-add" onclick="addCartFromModal()">Add to Cart</button>
+        <button class="dl-btn" id="pm-dl" onclick="downloadPrintFile()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>Download Print File</button>
+      </div>
+      <div class="pm-specs" id="pm-specs"></div>
+    </div>
+  </div>
+</div>
+
 <div class="c-ov" id="c-ov" onclick="togCart()"></div>
 <div class="c-dr" id="c-dr">
   <div class="c-hd"><h2>Your Cart</h2><button class="c-cl" onclick="togCart()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button></div>
@@ -273,6 +325,7 @@ body{font-family:var(--fb);background:var(--bg);color:var(--text);line-height:1.
   <div class="c-ft">
     <div class="c-tot"><span>Total</span><strong id="c-total">$0.00</strong></div>
     <button class="co-btn" id="co-btn" onclick="doCheckout()" disabled>Proceed to Checkout</button>
+    <button class="dl-order-btn" id="dl-order-btn" onclick="downloadOrderSummary()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>Download Order Summary</button>
     <p class="c-meta">Secure checkout powered by Stripe</p>
   </div>
 </div>
@@ -420,6 +473,26 @@ function drawMockup(cv, cat, artSrc, cb) {
     ctx.drawImage(prodImg, 0, 0, W, H);
     ctx.globalAlpha = 1.0;
 
+    // Step 6: Edge vignette — dark gradient around print zone edges for realism
+    ctx.globalCompositeOperation = 'multiply';
+    const vigW = pw * 0.15, vigH = ph * 0.15;
+    // Top edge
+    const gT = ctx.createLinearGradient(px, py, px, py + vigH);
+    gT.addColorStop(0, 'rgba(60,40,30,0.35)'); gT.addColorStop(1, 'rgba(60,40,30,0)');
+    ctx.fillStyle = gT; ctx.fillRect(px, py, pw, vigH);
+    // Bottom edge
+    const gB = ctx.createLinearGradient(px, py + ph, px, py + ph - vigH);
+    gB.addColorStop(0, 'rgba(60,40,30,0.35)'); gB.addColorStop(1, 'rgba(60,40,30,0)');
+    ctx.fillStyle = gB; ctx.fillRect(px, py + ph - vigH, pw, vigH);
+    // Left edge
+    const gL = ctx.createLinearGradient(px, py, px + vigW, py);
+    gL.addColorStop(0, 'rgba(60,40,30,0.3)'); gL.addColorStop(1, 'rgba(60,40,30,0)');
+    ctx.fillStyle = gL; ctx.fillRect(px, py, vigW, ph);
+    // Right edge
+    const gR = ctx.createLinearGradient(px + pw, py, px + pw - vigW, py);
+    gR.addColorStop(0, 'rgba(60,40,30,0.3)'); gR.addColorStop(1, 'rgba(60,40,30,0)');
+    ctx.fillStyle = gR; ctx.fillRect(px + pw - vigW, py, vigW, ph);
+
     ctx.restore();
     ctx.globalCompositeOperation = 'source-over';
 
@@ -460,7 +533,7 @@ function renderProds(){
     const szButtons=p.sizes.length>1?`<div class="sz-row">${p.sizes.map((s,si)=>
       `<button class="sz-opt${si===0?' sel':''}" onclick="event.stopPropagation();pickSz('${p.id}',${si},${i})" data-pi="${p.id}" data-si="${si}">${s.label}</button>`
     ).join('')}</div>`:'';
-    return`<div class="p-card">
+    return`<div class="p-card" onclick="openProdModal(${i})">
       ${p.badge?`<span class="p-badge ${badgeCls[p.badge]||'bg-pop'}">${p.badge}</span>`:''}
       <span class="preview-tag" id="ptag-${i}">Your Pet Preview</span>
       <div class="p-mock"><img class="mock-bg" id="mbg-${i}" src="${mockups[p.category]||mockups.canvas}" alt="${p.name}"><canvas class="mock-cv" id="mcv-${i}"></canvas></div>
@@ -470,7 +543,7 @@ function renderProds(){
         ${szButtons}
         <div class="p-foot">
           <div class="p-price" id="pr-${i}">${sz.priceDisplay}</div>
-          <button class="add-btn" id="ab-${i}" onclick="addCart(${i})" ${!petUp?'disabled':''}>Add to Cart</button>
+          <button class="add-btn" id="ab-${i}" onclick="event.stopPropagation();addCart(${i})" ${!petUp?'disabled':''}>Add to Cart</button>
         </div>
       </div>
     </div>`;
@@ -578,6 +651,147 @@ function updCart(){
   document.getElementById('co-btn').disabled=!cart.length;
 }
 function togCart(){const o=document.getElementById('c-ov'),d=document.getElementById('c-dr');if(d.classList.contains('open')){o.classList.remove('open');d.classList.remove('open');document.body.style.overflow=''}else{o.classList.add('open');d.classList.add('open');document.body.style.overflow='hidden'}}
+
+// ---- Printify Specs ----
+const printifySpecs = {
+  canvas: {blueprint:'Canvas Print',sizes:{'8':'8" × 10" (2400×3000px)','16':'16" × 20" (4800×6000px)','24':'24" × 36" (7200×10800px)'},dpi:300},
+  blanket: {blueprint:'Velveteen Plush Blanket',sizes:{'50':'50" × 60" (5000×6000px)','60':'60" × 80" (6000×8000px)'},dpi:100},
+  mug: {blueprint:'White Ceramic Mug',sizes:{'11':'4.5" × 3.5" (1350×1050px)','15':'4.7" × 4.0" (1410×1200px)'},dpi:300},
+  phone: {blueprint:'Tough Phone Case',sizes:{'All':'Varies by model'},dpi:300},
+  pillow: {blueprint:'Spun Polyester Pillow',sizes:{'16':'18" × 18" (5400×5400px)'},dpi:300},
+  tote: {blueprint:'Cotton Canvas Tote',sizes:{'Standard':'15" × 15" (4500×4500px)'},dpi:300}
+};
+
+let modalIdx = -1;
+let modalSizeIdx = 0;
+
+function openProdModal(idx) {
+  const p = prods[idx];
+  if (!p) return;
+  modalIdx = idx;
+  modalSizeIdx = selectedSizes[p.id] || 0;
+  const sz = p.sizes[modalSizeIdx];
+  const spec = printifySpecs[p.category] || printifySpecs.canvas;
+
+  document.getElementById('pm-name').textContent = p.name;
+  document.getElementById('pm-desc').textContent = p.description || p.subtitle;
+  document.getElementById('pm-price').textContent = sz.priceDisplay;
+  document.getElementById('pm-add').disabled = !petUp;
+
+  // Sizes
+  const szEl = document.getElementById('pm-sizes');
+  szEl.innerHTML = p.sizes.map((s, si) =>
+    `<button class="sz-opt${si === modalSizeIdx ? ' sel' : ''}" onclick="pickModalSz(${si})">${s.label}</button>`
+  ).join('');
+
+  // Mockup image
+  const imgEl = document.getElementById('pm-img');
+  if (styledUrl) {
+    imgEl.innerHTML = '<canvas id="pm-cv" width="800" height="597"></canvas>';
+    const cv = document.getElementById('pm-cv');
+    drawMockup(cv, p.category, styledUrl, () => {});
+  } else {
+    imgEl.innerHTML = `<img src="${mockups[p.category] || mockups.canvas}" alt="${p.name}">`;
+  }
+
+  // Specs table
+  const sizeKey = Object.keys(spec.sizes).find(k => sz.label.includes(k)) || Object.keys(spec.sizes)[0];
+  const printArea = spec.sizes[sizeKey] || Object.values(spec.sizes)[0];
+  document.getElementById('pm-specs').innerHTML = `<h4>Printify Specs</h4><table>
+    <tr><td>Blueprint</td><td>${spec.blueprint}</td></tr>
+    <tr><td>Print Area</td><td>${printArea}</td></tr>
+    <tr><td>Recommended DPI</td><td>${spec.dpi}</td></tr>
+  </table>`;
+
+  document.getElementById('pm-ov').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+
+function closeProdModal() {
+  document.getElementById('pm-ov').classList.remove('open');
+  document.body.style.overflow = '';
+  modalIdx = -1;
+}
+
+function pickModalSz(si) {
+  if (modalIdx < 0) return;
+  const p = prods[modalIdx];
+  modalSizeIdx = si;
+  selectedSizes[p.id] = si;
+  const sz = p.sizes[si];
+  document.getElementById('pm-price').textContent = sz.priceDisplay;
+  document.querySelectorAll('#pm-sizes .sz-opt').forEach((b, i) => b.classList.toggle('sel', i === si));
+  // Update specs
+  const spec = printifySpecs[p.category] || printifySpecs.canvas;
+  const sizeKey = Object.keys(spec.sizes).find(k => sz.label.includes(k)) || Object.keys(spec.sizes)[0];
+  const printArea = spec.sizes[sizeKey] || Object.values(spec.sizes)[0];
+  document.getElementById('pm-specs').innerHTML = `<h4>Printify Specs</h4><table>
+    <tr><td>Blueprint</td><td>${spec.blueprint}</td></tr>
+    <tr><td>Print Area</td><td>${printArea}</td></tr>
+    <tr><td>Recommended DPI</td><td>${spec.dpi}</td></tr>
+  </table>`;
+  // Update card price too
+  document.getElementById('pr-' + modalIdx).textContent = sz.priceDisplay;
+  document.querySelectorAll(`.sz-opt[data-pi="${p.id}"]`).forEach(b => {
+    b.classList.toggle('sel', parseInt(b.dataset.si) === si);
+  });
+}
+
+function addCartFromModal() {
+  if (modalIdx < 0 || !petUp) return;
+  addCart(modalIdx);
+}
+
+function downloadPrintFile() {
+  if (!styledUrl) { toast('Upload a photo first to download the print file.'); return; }
+  const a = document.createElement('a');
+  a.href = styledUrl;
+  a.download = 'pawcanvas-print-' + (prods[modalIdx] ? prods[modalIdx].category : 'art') + '.png';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  toast('Print file downloaded!');
+}
+
+function downloadOrderSummary() {
+  if (!cart.length) { toast('Your cart is empty.'); return; }
+  let txt = '========================================\n';
+  txt += '  PawCanvas — Order Summary\n';
+  txt += '========================================\n\n';
+  txt += 'Art Style: ' + selSt + '\n\n';
+  let total = 0;
+  cart.forEach((item, i) => {
+    const spec = printifySpecs[item.cat] || printifySpecs.canvas;
+    const sizeKey = Object.keys(spec.sizes).find(k => item.size.includes(k)) || Object.keys(spec.sizes)[0];
+    const printArea = spec.sizes[sizeKey] || Object.values(spec.sizes)[0];
+    const lineTotal = item.price * item.qty;
+    total += lineTotal;
+    txt += `${i + 1}. ${item.name}\n`;
+    txt += `   Size: ${item.size}\n`;
+    txt += `   Qty: ${item.qty}\n`;
+    txt += `   Price: $${(lineTotal / 100).toFixed(2)}\n`;
+    txt += `   --- Printify Specs ---\n`;
+    txt += `   Blueprint: ${spec.blueprint}\n`;
+    txt += `   Print Area: ${printArea}\n`;
+    txt += `   Recommended DPI: ${spec.dpi}\n`;
+    txt += `   Print file: Download from product modal\n\n`;
+  });
+  txt += '----------------------------------------\n';
+  txt += `TOTAL: $${(total / 100).toFixed(2)}\n`;
+  txt += '----------------------------------------\n\n';
+  txt += 'NOTE: Print files can be downloaded from each\n';
+  txt += 'product\'s detail modal using the "Download Print File" button.\n';
+
+  const blob = new Blob([txt], { type: 'text/plain' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'pawcanvas-order-summary.txt';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(a.href);
+  toast('Order summary downloaded!');
+}
 
 // ---- Checkout ----
 async function doCheckout(){
