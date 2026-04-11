@@ -197,7 +197,7 @@ app.post('/api/reviews', (req, res) => {
   }
 
   const review = {
-    id: crypto.randomUUID(),
+    id: crypto.randomBytes(16).toString('hex'),
     rating: Math.floor(rating),
     name: name.trim().slice(0, 100),
     product: product ? product.trim().slice(0, 100) : '',
