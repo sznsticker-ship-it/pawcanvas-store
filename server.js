@@ -14,7 +14,6 @@ app.post('/api/webhook', express.raw({ type: 'application/json' }), async (req, 
   const sig = req.headers['stripe-signature'];
   let event;
   try {
-    // In production, verify with webhook secret. For now, parse directly.
     event = JSON.parse(req.body);
   } catch (err) {
     console.error('Webhook parse error:', err.message);
@@ -25,8 +24,6 @@ app.post('/api/webhook', express.raw({ type: 'application/json' }), async (req, 
     const session = event.data.object;
     console.log('✅ Payment successful for:', session.customer_details?.email);
     console.log('📦 Order metadata:', session.metadata);
-    // Order details stored in metadata — admin can create Printify order from dashboard
-    // In production, auto-create Printify order here
   }
 
   res.json({ received: true });
@@ -36,129 +33,87 @@ app.use(express.json());
 app.use(cors());
 app.use(express.static(path.join(__dirname, 'public')));
 
-// Product catalog
+// Product catalog — 6 product types, each with size variants
 const PRODUCTS = [
   {
-    id: 'canvas-8x10',
+    id: 'canvas',
     name: 'Pet Portrait Canvas',
     subtitle: 'Gallery-Ready Stretched Canvas',
-    size: '8" × 10"',
-    price: 3999,
-    priceDisplay: '$39.99',
     description: 'Museum-quality stretched canvas, ready to hang. Your pet transformed into a stunning work of art.',
     category: 'canvas',
-    badge: null,
-    icon: '🖼️'
-  },
-  {
-    id: 'canvas-16x20',
-    name: 'Pet Portrait Canvas',
-    subtitle: 'Statement Piece Canvas',
-    size: '16" × 20"',
-    price: 6999,
-    priceDisplay: '$69.99',
-    description: 'Our most popular size. A stunning centerpiece for any room — your pet as a true masterpiece.',
-    category: 'canvas',
     badge: 'Best Seller',
-    icon: '🖼️'
+    sizes: [
+      { sizeId: 'canvas-8x10',  label: '8" × 10"',  price: 3999, priceDisplay: '$39.99' },
+      { sizeId: 'canvas-16x20', label: '16" × 20"', price: 6999, priceDisplay: '$69.99' },
+      { sizeId: 'canvas-24x36', label: '24" × 36"', price: 9999, priceDisplay: '$99.99' }
+    ]
   },
   {
-    id: 'canvas-24x36',
-    name: 'Pet Portrait Canvas',
-    subtitle: 'Grand Statement Canvas',
-    size: '24" × 36"',
-    price: 9999,
-    priceDisplay: '$99.99',
-    description: 'The ultimate statement piece. Gallery-sized canvas that commands attention in any space.',
-    category: 'canvas',
-    badge: 'Premium',
-    icon: '🖼️'
-  },
-  {
-    id: 'blanket-50x60',
+    id: 'blanket',
     name: 'Pet Portrait Blanket',
     subtitle: 'Velveteen Plush Throw',
-    size: '50" × 60"',
-    price: 6499,
-    priceDisplay: '$64.99',
     description: 'Ultra-soft velveteen plush blanket with your pet\'s portrait. Perfect for cozy nights on the couch.',
     category: 'blanket',
     badge: 'Popular',
-    icon: '🛋️'
+    sizes: [
+      { sizeId: 'blanket-50x60', label: '50" × 60"', price: 6499, priceDisplay: '$64.99' },
+      { sizeId: 'blanket-60x80', label: '60" × 80"', price: 7999, priceDisplay: '$79.99' }
+    ]
   },
   {
-    id: 'blanket-60x80',
-    name: 'Pet Portrait Blanket',
-    subtitle: 'Full-Size Plush Blanket',
-    size: '60" × 80"',
-    price: 7999,
-    priceDisplay: '$79.99',
-    description: 'Full bed-sized velveteen blanket. Wrap yourself in warmth and memories of your best friend.',
-    category: 'blanket',
-    badge: null,
-    icon: '🛋️'
-  },
-  {
-    id: 'mug-11oz',
+    id: 'mug',
     name: 'Pet Portrait Mug',
     subtitle: 'Classic White Ceramic',
-    size: '11 oz',
-    price: 2799,
-    priceDisplay: '$27.99',
     description: 'Start every morning with your best friend. Premium white ceramic with vivid wrap-around print.',
     category: 'mug',
     badge: 'Gift Favorite',
-    icon: '☕'
+    sizes: [
+      { sizeId: 'mug-11oz', label: '11 oz', price: 2799, priceDisplay: '$27.99' },
+      { sizeId: 'mug-15oz', label: '15 oz', price: 3299, priceDisplay: '$32.99' }
+    ]
   },
   {
-    id: 'mug-15oz',
-    name: 'Pet Portrait Mug',
-    subtitle: 'Large White Ceramic',
-    size: '15 oz',
-    price: 3299,
-    priceDisplay: '$32.99',
-    description: 'Extra-large mug for extra love. Dishwasher and microwave safe with fade-resistant printing.',
-    category: 'mug',
-    badge: null,
-    icon: '☕'
-  },
-  {
-    id: 'phone-case',
+    id: 'phone',
     name: 'Pet Portrait Phone Case',
     subtitle: 'Tough Dual-Layer Case',
-    size: 'All Models',
-    price: 3499,
-    priceDisplay: '$34.99',
     description: 'Dual-layer tough case with your pet\'s portrait. Impact resistant with glossy vivid printing.',
     category: 'phone',
     badge: null,
-    icon: '📱'
+    sizes: [
+      { sizeId: 'phone-case', label: 'All Models', price: 3499, priceDisplay: '$34.99' }
+    ]
   },
   {
-    id: 'pillow-16x16',
+    id: 'pillow',
     name: 'Pet Portrait Pillow',
     subtitle: 'Spun Polyester Square',
-    size: '16" × 16"',
-    price: 4499,
-    priceDisplay: '$44.99',
     description: 'Decorative throw pillow with your pet\'s portrait. Soft, huggable, and makes any couch special.',
     category: 'pillow',
     badge: null,
-    icon: '🛏️'
+    sizes: [
+      { sizeId: 'pillow-16x16', label: '16" × 16"', price: 4499, priceDisplay: '$44.99' }
+    ]
   },
   {
-    id: 'tote-bag',
+    id: 'tote',
     name: 'Pet Portrait Tote',
     subtitle: 'Cotton Canvas Tote Bag',
-    size: 'Standard',
-    price: 2999,
-    priceDisplay: '$29.99',
     description: 'Take your pet everywhere. Durable cotton canvas tote with full-color portrait printing.',
     category: 'tote',
     badge: null,
-    icon: '👜'
+    sizes: [
+      { sizeId: 'tote-bag', label: 'Standard', price: 2999, priceDisplay: '$29.99' }
+    ]
   }
 ];
+
+// Flat lookup for checkout
+const ALL_VARIANTS = {};
+PRODUCTS.forEach(p => {
+  p.sizes.forEach(s => {
+    ALL_VARIANTS[s.sizeId] = { ...s, productName: p.name, subtitle: p.subtitle, category: p.category };
+  });
+});
 
 // API Routes
 app.get('/api/products', (req, res) => {
@@ -175,16 +130,16 @@ app.post('/api/create-checkout-session', async (req, res) => {
     const { items, customerEmail, artStyle, petNotes } = req.body;
 
     const lineItems = items.map(item => {
-      const product = PRODUCTS.find(p => p.id === item.id);
-      if (!product) throw new Error(`Product not found: ${item.id}`);
+      const variant = ALL_VARIANTS[item.id];
+      if (!variant) throw new Error(`Product not found: ${item.id}`);
       return {
         price_data: {
           currency: 'usd',
           product_data: {
-            name: `${product.name} (${product.size})`,
-            description: `${product.subtitle} — Art Style: ${artStyle || 'Watercolor'}`,
+            name: `${variant.productName} (${variant.label})`,
+            description: `${variant.subtitle} — Art Style: ${artStyle || 'Watercolor'}`,
           },
-          unit_amount: product.price,
+          unit_amount: variant.price,
         },
         quantity: item.quantity || 1,
       };
