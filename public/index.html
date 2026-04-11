@@ -328,238 +328,121 @@ function applyFilter(src,style,cb){
   img.src=src;
 }
 
-// ---- Canvas-based product mockup generator ----
-function drawMockup(cv,cat,imgSrc,cb){
-  const ctx=cv.getContext('2d');
-  const W=800,H=600;
-  cv.width=W;cv.height=H;
-  const img=new Image();
-  img.crossOrigin='anonymous';
-  img.onload=()=>{
-    ctx.clearRect(0,0,W,H);
-    switch(cat){
-      case'phone':drawPhoneMockup(ctx,W,H,img);break;
-      case'mug':drawMugMockup(ctx,W,H,img);break;
-      case'canvas':drawCanvasMockup(ctx,W,H,img);break;
-      case'blanket':drawBlanketMockup(ctx,W,H,img);break;
-      case'pillow':drawPillowMockup(ctx,W,H,img);break;
-      case'tote':drawToteMockup(ctx,W,H,img);break;
-      default:drawCanvasMockup(ctx,W,H,img);
-    }
-    if(cb)cb();
+// ---- Photorealistic product mockup compositing engine ----
+// Uses real product photos + multiply blend to composite artwork naturally
+
+// Print area zones (x%, y%, w%, h%) for each product photo
+const printZones = {
+  phone:   { x: 0.38, y: 0.12, w: 0.28, h: 0.78, r: 24 },
+  mug:     { x: 0.10, y: 0.24, w: 0.60, h: 0.62, r: 0 },
+  canvas:  { x: 0.13, y: 0.08, w: 0.73, h: 0.84, r: 0 },
+  blanket: { x: 0.20, y: 0.02, w: 0.60, h: 0.88, r: 8 },
+  pillow:  { x: 0.18, y: 0.08, w: 0.56, h: 0.80, r: 10 },
+  tote:    { x: 0.30, y: 0.12, w: 0.38, h: 0.70, r: 0 }
+};
+
+// Product photo URLs
+const prodPhotos = {
+  phone:   '/mockups/mockup-phone.jpg',
+  mug:     '/mockups/mockup-mug.jpg',
+  canvas:  '/mockups/mockup-canvas.jpg',
+  blanket: '/mockups/mockup-blanket.jpg',
+  pillow:  '/mockups/mockup-pillow.jpg',
+  tote:    '/mockups/mockup-tote.jpg'
+};
+
+// Preload product photos
+const prodPhotoCache = {};
+Object.entries(prodPhotos).forEach(([cat, url]) => {
+  const img = new Image();
+  img.crossOrigin = 'anonymous';
+  img.src = url;
+  prodPhotoCache[cat] = img;
+});
+
+// Draw image with cover fit (like CSS object-fit: cover)
+function drawCover(ctx, img, x, y, w, h) {
+  const iR = img.width / img.height, aR = w / h;
+  let sx = 0, sy = 0, sw = img.width, sh = img.height;
+  if (iR > aR) { sw = img.height * aR; sx = (img.width - sw) / 2; }
+  else { sh = img.width / aR; sy = (img.height - sh) / 2; }
+  ctx.drawImage(img, sx, sy, sw, sh, x, y, w, h);
+}
+
+// Rounded rect path helper
+function roundRect(ctx, x, y, w, h, r) {
+  if (r <= 0) { ctx.rect(x, y, w, h); return; }
+  ctx.moveTo(x + r, y);
+  ctx.lineTo(x + w - r, y); ctx.quadraticCurveTo(x + w, y, x + w, y + r);
+  ctx.lineTo(x + w, y + h - r); ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+  ctx.lineTo(x + r, y + h); ctx.quadraticCurveTo(x, y + h, x, y + h - r);
+  ctx.lineTo(x, y + r); ctx.quadraticCurveTo(x, y, x + r, y);
+}
+
+// Main compositing function: real product photo + multiply-blended artwork
+function drawMockup(cv, cat, artSrc, cb) {
+  const ctx = cv.getContext('2d');
+  const W = 800, H = 597;
+  cv.width = W; cv.height = H;
+
+  const prodImg = prodPhotoCache[cat] || prodPhotoCache['canvas'];
+  const zone = printZones[cat] || printZones['canvas'];
+
+  const artImg = new Image();
+  artImg.crossOrigin = 'anonymous';
+  artImg.onload = () => {
+    ctx.clearRect(0, 0, W, H);
+
+    // Step 1: Draw the real product photo as base
+    ctx.drawImage(prodImg, 0, 0, W, H);
+
+    // Step 2: Calculate print area in pixels
+    const px = Math.round(zone.x * W);
+    const py = Math.round(zone.y * H);
+    const pw = Math.round(zone.w * W);
+    const ph = Math.round(zone.h * H);
+    const pr = zone.r || 0;
+
+    // Step 3: Create clipping path for print area
+    ctx.save();
+    ctx.beginPath();
+    roundRect(ctx, px, py, pw, ph, pr);
+    ctx.closePath();
+    ctx.clip();
+
+    // Step 4: Draw artwork with multiply blend (blends with product lighting/shadows)
+    ctx.globalCompositeOperation = 'multiply';
+    drawCover(ctx, artImg, px, py, pw, ph);
+
+    // Step 5: Add subtle overlay for depth (preserves product texture)
+    ctx.globalCompositeOperation = 'overlay';
+    ctx.globalAlpha = 0.08;
+    ctx.drawImage(prodImg, 0, 0, W, H);
+    ctx.globalAlpha = 1.0;
+
+    ctx.restore();
+    ctx.globalCompositeOperation = 'source-over';
+
+    if (cb) cb();
   };
-  img.src=imgSrc;
+  artImg.onerror = () => { if (cb) cb(); };
+  artImg.src = artSrc;
 }
 
-// Helper: draw image covering area (like object-fit:cover)
-function drawCover(ctx,img,x,y,w,h){
-  const iR=img.width/img.height, aR=w/h;
-  let sx=0,sy=0,sw=img.width,sh=img.height;
-  if(iR>aR){sw=img.height*aR;sx=(img.width-sw)/2;}
-  else{sh=img.width/aR;sy=(img.height-sh)/2;}
-  ctx.drawImage(img,sx,sy,sw,sh,x,y,w,h);
-}
-
-// Phone case mockup
-function drawPhoneMockup(ctx,W,H,img){
-  const bg='#1a1a2e';
-  ctx.fillStyle=bg;ctx.fillRect(0,0,W,H);
-  // Phone body
-  const pw=280,ph=520,px=(W-pw)/2,py=(H-ph)/2;
-  const br=40;
-  // Shadow
-  ctx.save();
-  ctx.shadowColor='rgba(0,0,0,0.4)';ctx.shadowBlur=40;ctx.shadowOffsetX=8;ctx.shadowOffsetY=12;
-  ctx.fillStyle='#111';
-  roundRect(ctx,px,py,pw,ph,br);ctx.fill();
-  ctx.restore();
-  // Bezel
-  ctx.fillStyle='#222';
-  roundRect(ctx,px,py,pw,ph,br);ctx.fill();
-  // Screen area with pet art
-  const sx=px+12,sy=py+50,sw=pw-24,sh=ph-70;
-  ctx.save();
-  roundRect(ctx,sx,sy,sw,sh,12);ctx.clip();
-  drawCover(ctx,img,sx,sy,sw,sh);
-  ctx.restore();
-  // Top notch
-  ctx.fillStyle='#111';
-  roundRect(ctx,W/2-50,py+10,100,28,14);ctx.fill();
-  // Camera dot
-  ctx.fillStyle='#333';ctx.beginPath();ctx.arc(W/2+20,py+24,6,0,Math.PI*2);ctx.fill();
-  // Bottom bar
-  ctx.fillStyle='rgba(255,255,255,0.15)';
-  roundRect(ctx,W/2-50,py+ph-30,100,4,2);ctx.fill();
-}
-
-// Mug mockup
-function drawMugMockup(ctx,W,H,img){
-  ctx.fillStyle='#f5efe3';ctx.fillRect(0,0,W,H);
-  // Table surface
-  ctx.fillStyle='#e8ddd0';ctx.fillRect(0,H*0.7,W,H*0.3);
-  ctx.fillStyle='#d4c8b8';ctx.fillRect(0,H*0.7,W,3);
-  // Mug body
-  const mw=300,mh=340,mx=(W-mw)/2-20,my=H*0.5-mh/2+30;
-  ctx.save();
-  ctx.shadowColor='rgba(0,0,0,0.25)';ctx.shadowBlur=30;ctx.shadowOffsetX=5;ctx.shadowOffsetY=10;
-  ctx.fillStyle='#fff';
-  roundRect(ctx,mx,my,mw,mh,16);ctx.fill();
-  ctx.restore();
-  // Mug art area (front face)
-  const ax=mx+20,ay=my+30,aw=mw-40,ah=mh-60;
-  ctx.save();
-  roundRect(ctx,ax,ay,aw,ah,8);ctx.clip();
-  drawCover(ctx,img,ax,ay,aw,ah);
-  ctx.restore();
-  // Handle
-  ctx.strokeStyle='#ddd';ctx.lineWidth=18;
-  ctx.beginPath();
-  ctx.arc(mx+mw+20,my+mh/2,55,Math.PI*-0.4,Math.PI*0.4);
-  ctx.stroke();
-  ctx.strokeStyle='#fff';ctx.lineWidth=12;
-  ctx.beginPath();
-  ctx.arc(mx+mw+20,my+mh/2,55,Math.PI*-0.4,Math.PI*0.4);
-  ctx.stroke();
-  // Rim highlight
-  ctx.fillStyle='rgba(255,255,255,0.6)';
-  roundRect(ctx,mx+2,my,mw-4,8,4);ctx.fill();
-}
-
-// Canvas print mockup
-function drawCanvasMockup(ctx,W,H,img){
-  ctx.fillStyle='#f8f4ed';ctx.fillRect(0,0,W,H);
-  // Wall texture dots
-  ctx.fillStyle='rgba(0,0,0,0.02)';
-  for(let i=0;i<200;i++){ctx.beginPath();ctx.arc(Math.random()*W,Math.random()*H,Math.random()*2+0.5,0,Math.PI*2);ctx.fill();}
-  // Shadow behind frame
-  const fw=480,fh=400,fx=(W-fw)/2,fy=(H-fh)/2;
-  ctx.save();
-  ctx.shadowColor='rgba(0,0,0,0.3)';ctx.shadowBlur=35;ctx.shadowOffsetX=6;ctx.shadowOffsetY=8;
-  ctx.fillStyle='#333';ctx.fillRect(fx,fy,fw,fh);
-  ctx.restore();
-  // Frame border
-  const border=14;
-  ctx.fillStyle='#5a3e28';
-  ctx.fillRect(fx,fy,fw,fh);
-  // Inner gold mat
-  ctx.fillStyle='#c9a96e';
-  ctx.fillRect(fx+border,fy+border,fw-border*2,fh-border*2);
-  // Art area
-  const ax=fx+border+6,ay=fy+border+6,aw=fw-border*2-12,ah=fh-border*2-12;
-  ctx.save();
-  ctx.beginPath();ctx.rect(ax,ay,aw,ah);ctx.clip();
-  drawCover(ctx,img,ax,ay,aw,ah);
-  ctx.restore();
-  // Frame highlight
-  ctx.strokeStyle='rgba(255,255,255,0.15)';ctx.lineWidth=1;
-  ctx.strokeRect(fx+1,fy+1,fw-2,fh-2);
-}
-
-// Blanket mockup
-function drawBlanketMockup(ctx,W,H,img){
-  ctx.fillStyle='#f0ebe2';ctx.fillRect(0,0,W,H);
-  // Blanket shape with soft folds
-  const bw=520,bh=420,bx=(W-bw)/2,by=(H-bh)/2;
-  ctx.save();
-  ctx.shadowColor='rgba(0,0,0,0.2)';ctx.shadowBlur=25;ctx.shadowOffsetX=4;ctx.shadowOffsetY=8;
-  ctx.fillStyle='#e8ddd0';
-  // Slightly wavy blanket outline
-  ctx.beginPath();
-  ctx.moveTo(bx+20,by);ctx.lineTo(bx+bw-20,by+10);
-  ctx.quadraticCurveTo(bx+bw+5,by+bh/2,bx+bw-10,by+bh-15);
-  ctx.lineTo(bx+15,by+bh);ctx.quadraticCurveTo(bx-5,by+bh/2,bx+20,by);
-  ctx.closePath();ctx.fill();
-  ctx.clip();
-  drawCover(ctx,img,bx,by,bw,bh);
-  // Soft fabric texture
-  ctx.fillStyle='rgba(255,255,255,0.06)';
-  for(let y=by;y<by+bh;y+=6){ctx.fillRect(bx,y,bw,2);}
-  ctx.restore();
-  // Fringe on bottom edge
-  ctx.strokeStyle='rgba(139,119,101,0.4)';ctx.lineWidth=2;
-  for(let x=bx+25;x<bx+bw-25;x+=12){
-    ctx.beginPath();ctx.moveTo(x,by+bh);ctx.lineTo(x+Math.random()*4-2,by+bh+15+Math.random()*8);ctx.stroke();
-  }
-}
-
-// Pillow mockup
-function drawPillowMockup(ctx,W,H,img){
-  ctx.fillStyle='#f0ebe2';ctx.fillRect(0,0,W,H);
-  // Couch/surface hint
-  ctx.fillStyle='#e0d5c7';ctx.fillRect(0,H*0.65,W,H*0.35);
-  const pw=380,ph=360,px=(W-pw)/2,py=(H-ph)/2+20;
-  ctx.save();
-  ctx.shadowColor='rgba(0,0,0,0.2)';ctx.shadowBlur=25;ctx.shadowOffsetX=3;ctx.shadowOffsetY=8;
-  // Pillow shape — puffy rounded rect
-  ctx.beginPath();
-  ctx.moveTo(px+40,py);ctx.quadraticCurveTo(px+pw/2,py-15,px+pw-40,py);
-  ctx.quadraticCurveTo(px+pw+10,py+ph/2,px+pw-40,py+ph);
-  ctx.quadraticCurveTo(px+pw/2,py+ph+15,px+40,py+ph);
-  ctx.quadraticCurveTo(px-10,py+ph/2,px+40,py);
-  ctx.closePath();
-  ctx.fillStyle='#fff';ctx.fill();ctx.clip();
-  drawCover(ctx,img,px,py,pw,ph);
-  // Soft shading for puffiness
-  const grad=ctx.createRadialGradient(px+pw/2,py+ph/2,pw*0.2,px+pw/2,py+ph/2,pw*0.6);
-  grad.addColorStop(0,'rgba(255,255,255,0)');grad.addColorStop(1,'rgba(0,0,0,0.06)');
-  ctx.fillStyle=grad;ctx.fillRect(px-10,py-15,pw+20,ph+30);
-  ctx.restore();
-}
-
-// Tote bag mockup
-function drawToteMockup(ctx,W,H,img){
-  ctx.fillStyle='#f0ebe2';ctx.fillRect(0,0,W,H);
-  const tw=320,th=380,tx=(W-tw)/2,ty=H*0.15;
-  // Straps
-  ctx.strokeStyle='#c9a96e';ctx.lineWidth=10;ctx.lineCap='round';
-  ctx.beginPath();ctx.moveTo(tx+70,ty);ctx.quadraticCurveTo(tx+70,ty-60,tx+130,ty-70);ctx.stroke();
-  ctx.beginPath();ctx.moveTo(tx+tw-70,ty);ctx.quadraticCurveTo(tx+tw-70,ty-60,tx+tw-130,ty-70);ctx.stroke();
-  // Bag body
-  ctx.save();
-  ctx.shadowColor='rgba(0,0,0,0.2)';ctx.shadowBlur=25;ctx.shadowOffsetX=4;ctx.shadowOffsetY=8;
-  ctx.beginPath();
-  ctx.moveTo(tx,ty);ctx.lineTo(tx-15,ty+th);
-  ctx.quadraticCurveTo(tx+tw/2,ty+th+15,tx+tw+15,ty+th);
-  ctx.lineTo(tx+tw,ty);ctx.closePath();
-  ctx.fillStyle='#f5f0e6';ctx.fill();ctx.clip();
-  // Art on bag front
-  const ax=tx+25,ay=ty+30,aw=tw-50,ah=th-60;
-  drawCover(ctx,img,ax,ay,aw,ah);
-  // Fabric texture
-  ctx.strokeStyle='rgba(0,0,0,0.03)';ctx.lineWidth=1;
-  for(let y=ty;y<ty+th;y+=4){ctx.beginPath();ctx.moveTo(tx-15,y);ctx.lineTo(tx+tw+15,y);ctx.stroke();}
-  ctx.restore();
-  // Bag outline
-  ctx.strokeStyle='#c9a96e';ctx.lineWidth=2;
-  ctx.beginPath();ctx.moveTo(tx,ty);ctx.lineTo(tx-15,ty+th);
-  ctx.quadraticCurveTo(tx+tw/2,ty+th+15,tx+tw+15,ty+th);
-  ctx.lineTo(tx+tw,ty);ctx.stroke();
-}
-
-// Rounded rect helper
-function roundRect(ctx,x,y,w,h,r){
-  ctx.beginPath();
-  ctx.moveTo(x+r,y);ctx.lineTo(x+w-r,y);ctx.quadraticCurveTo(x+w,y,x+w,y+r);
-  ctx.lineTo(x+w,y+h-r);ctx.quadraticCurveTo(x+w,y+h,x+w-r,y+h);
-  ctx.lineTo(x+r,y+h);ctx.quadraticCurveTo(x,y+h,x,y+h-r);
-  ctx.lineTo(x,y+r);ctx.quadraticCurveTo(x,y,x+r,y);
-  ctx.closePath();
-}
-
-function showPetPreview(idx,cat){
-  const cv=document.getElementById('mcv-'+idx);
-  const bg=document.getElementById('mbg-'+idx);
-  if(!cv||!bg)return;
-  if(styledUrl){
-    drawMockup(cv,cat,styledUrl,()=>{
-      cv.style.display='block';
-      bg.style.display='none';
+function showPetPreview(idx, cat) {
+  const cv = document.getElementById('mcv-' + idx);
+  const bg = document.getElementById('mbg-' + idx);
+  if (!cv || !bg) return;
+  if (styledUrl) {
+    drawMockup(cv, cat, styledUrl, () => {
+      cv.style.display = 'block';
+      bg.style.display = 'none';
     });
-    document.getElementById('ptag-'+idx).style.display='block';
+    document.getElementById('ptag-' + idx).style.display = 'block';
   } else {
-    cv.style.display='none';
-    bg.style.display='block';
-    document.getElementById('ptag-'+idx).style.display='none';
+    cv.style.display = 'none';
+    bg.style.display = 'block';
+    document.getElementById('ptag-' + idx).style.display = 'none';
   }
 }
 
