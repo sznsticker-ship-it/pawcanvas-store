@@ -172,7 +172,7 @@ a{color:inherit;text-decoration:none}
 .extra-item{display:flex;align-items:flex-start;gap:12px;padding:14px;border:2px solid var(--border);border-radius:var(--radius-sm);margin-bottom:10px;cursor:pointer;transition:all .15s}
 .extra-item:hover{border-color:var(--accent)}
 .extra-item.checked{border-color:var(--accent);background:rgba(212,129,42,.04)}
-.extra-cb{width:20px;height:20px;border:2px solid var(--border);border-radius:4px;flex-shrink:0;display:flex;align-items:center;justify-content:center;margin-top:2px;transition:all .15s}
+.extra-cb{width:20px;height:20px;border:2px solid var(--border);border-radius:4px;flex-shrink:0;display:flex;align-items:center;justify-content:center;margin-top:2px;transition:all .15s;color:transparent;font-size:13px}
 .extra-item.checked .extra-cb{background:var(--accent);border-color:var(--accent);color:var(--white)}
 .extra-info h4{font-size:14px;font-weight:600;margin-bottom:2px}
 .extra-info p{font-size:12px;color:var(--text-light)}
@@ -478,7 +478,7 @@ a{color:inherit;text-decoration:none}
         <div class="step-panel" id="step-extras">
           <div class="step-label">Add Extras</div>
           <div class="extra-item" onclick="toggleExtra(this,'rush')" data-extra="rush">
-            <div class="extra-cb">✓</div>
+            <div class="extra-cb"></div>
             <div class="extra-info">
               <h4>Rush — Preview in 12 Hours</h4>
               <p>Skip the line and get your artwork proof faster.</p>
@@ -486,7 +486,7 @@ a{color:inherit;text-decoration:none}
             <div class="extra-price">+$10.00</div>
           </div>
           <div class="extra-item" onclick="toggleExtra(this,'digital')" data-extra="digital">
-            <div class="extra-cb">✓</div>
+            <div class="extra-cb"></div>
             <div class="extra-info">
               <h4>Digital Download</h4>
               <p>Get a high-res digital file — perfect for wallpapers and sharing. 60% of customers add this.</p>
@@ -769,12 +769,18 @@ function resetUpload() {
 function toggleExtra(el, key) {
   extras[key] = !extras[key];
   el.classList.toggle('checked', extras[key]);
+  // Update checkbox visual
+  const cb = el.querySelector('.extra-cb');
+  cb.textContent = extras[key] ? '✓' : '';
   updatePrice();
 }
 
 function resetExtras() {
   extras = {rush:false, digital:false};
-  document.querySelectorAll('.extra-item').forEach(el => el.classList.remove('checked'));
+  document.querySelectorAll('.extra-item').forEach(el => {
+    el.classList.remove('checked');
+    el.querySelector('.extra-cb').textContent = '';
+  });
 }
 
 /* Price */
